@@ -1,2 +1,2 @@
-package project.enums;
+package project.models.enums;
 public enum Role { STUDENT, TEACHER, MANAGER, ADMIN, TECH_SUPPORT }

@@ -1,6 +1,7 @@
 package project.services;
 
 import project.models.actors.User;
+import project.models.enums.LanguageType;
 import project.storage.Database;
 
 /**
@@ -10,7 +11,6 @@ import project.storage.Database;
 public class AuthService {
     private static User currentUser = null;
 
-    /** Attempts login. Returns the User on success, null on failure. */
     public static User login(String id, String password) {
         User user = Database.getInstance().getUserById(id);
         if (user != null && password != null && password.equals(user.getPassword())) {
@@ -30,8 +30,14 @@ public class AuthService {
     public static User getCurrentUser() { return currentUser; }
     public static boolean isLoggedIn() { return currentUser != null; }
 
-    /** Checks if current user has required role. */
-    public static boolean hasRole(project.enums.Role role) {
+    public static boolean hasRole(project.models.enums.Role role) {
         return currentUser != null && currentUser.getRole() == role;
+    }
+
+    public static void switchLanguage(User user, LanguageType lang) {
+        Database db = Database.getInstance();
+        User live = db.getUserById(user.getId());
+        if (live != null) live.switchLanguage(lang);
+        db.saveToDisk();
     }
 }

@@ -2,7 +2,9 @@ package project.models.others;
 
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -18,6 +20,8 @@ public class ResearchPaper implements Comparable<ResearchPaper>, Serializable {
     private String doi;
     private Date publishDate;
     private int pages;
+    private List<Citation> paperCitations;
+    private String projectId;
 
     public ResearchPaper() {}
 
@@ -27,10 +31,6 @@ public class ResearchPaper implements Comparable<ResearchPaper>, Serializable {
         this.publishDate = publishDate; this.pages = pages;
     }
 
-    /**
-     * Returns citation string in Plain Text or BibTeX format.
-     * @param format "Plain Text" or "Bibtex"
-     */
     public String getCitation(String format) {
         String year = publishDate != null ? new SimpleDateFormat("yyyy").format(publishDate) : "n.d.";
         if ("Bibtex".equalsIgnoreCase(format)) {
@@ -43,11 +43,9 @@ public class ResearchPaper implements Comparable<ResearchPaper>, Serializable {
                    "  pages={" + pages + "},\n" +
                    "  doi={" + doi + "}\n}";
         }
-        // Default: Plain Text
         return authors + " (" + year + "). " + title + ". " + journal + ". Pages: " + pages + ". DOI: " + doi;
     }
 
-    // Natural order: higher citations first
     @Override public int compareTo(ResearchPaper o) { return Integer.compare(o.citations, this.citations); }
 
     public String getTitle() { return title; }
@@ -64,6 +62,18 @@ public class ResearchPaper implements Comparable<ResearchPaper>, Serializable {
     public void setPublishDate(Date pd) { this.publishDate = pd; }
     public int getPages() { return pages; }
     public void setPages(int p) { this.pages = p; }
+
+    public String getProjectId()       { return projectId; }
+    public void setProjectId(String p) { this.projectId = p; }
+
+    public List<Citation> getPaperCitations() {
+        if (paperCitations == null) paperCitations = new ArrayList<>();
+        return paperCitations;
+    }
+    public void addPaperCitation(Citation c) {
+        if (paperCitations == null) paperCitations = new ArrayList<>();
+        paperCitations.add(c);
+    }
 
     @Override public int hashCode() { return Objects.hash(authors, citations, doi, journal, pages, publishDate, title); }
     @Override public boolean equals(Object obj) {

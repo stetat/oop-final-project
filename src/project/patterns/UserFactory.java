@@ -1,8 +1,8 @@
 package project.patterns;
 
-import project.enums.ManagerType;
-import project.enums.TeacherTitle;
 import project.models.actors.*;
+import project.models.enums.ManagerType;
+import project.models.enums.TeacherTitle;
 
 
 public class UserFactory {

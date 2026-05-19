@@ -18,7 +18,6 @@ public class ResearchJournal implements Serializable {
     }
     public void unsubscribe(JournalObserver observer) { subscribers.remove(observer); }
 
-    /** Publishes a new paper and notifies all subscribers. */
     public void publishPaper(ResearchPaper paper) {
         papers.add(paper);
         System.out.println("[Journal: " + name + "] New paper published: " + paper.getTitle());
@@ -29,7 +28,6 @@ public class ResearchJournal implements Serializable {
     public String getName() { return name; }
     public List<ResearchPaper> getPapers() { return papers; }
 
-    // Restore transient list after deserialization
     private Object readResolve() {
         if (subscribers == null) subscribers = new ArrayList<>();
         return this;

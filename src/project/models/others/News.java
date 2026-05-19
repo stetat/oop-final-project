@@ -27,11 +27,9 @@ public class News implements Comparable<News>, Serializable {
 
     public void addComment(String comment) { if (comment != null && !comment.isBlank()) comments.add(comment); }
 
-    /** Research news sorts before general news (lower value = higher priority). */
     @Override public int compareTo(News o) {
         if (this.isResearchNews && !o.isResearchNews) return -1;
         if (!this.isResearchNews && o.isResearchNews) return 1;
-        // Within same category: newer first
         return o.publishedAt != null && this.publishedAt != null ? o.publishedAt.compareTo(this.publishedAt) : 0;
     }
 

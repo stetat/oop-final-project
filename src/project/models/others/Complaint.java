@@ -2,7 +2,8 @@ package project.models.others;
 
 import java.io.Serializable;
 import java.util.Objects;
-import project.enums.UrgencyLevel;
+
+import project.models.enums.UrgencyLevel;
 
 /** A formal teacher complaint about a student, sent to dean. */
 public class Complaint implements Serializable {

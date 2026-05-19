@@ -2,10 +2,11 @@ package project.models.actors;
 
 import java.io.Serializable;
 import java.util.*;
-import project.enums.LanguageType;
-import project.enums.Role;
+
 import project.patterns.JournalObserver;
 import project.patterns.ResearchJournal;
+import project.models.enums.LanguageType;
+import project.models.enums.Role;
 import project.models.others.ResearchPaper;
 
 /**
@@ -34,25 +35,21 @@ public abstract class User implements Serializable, JournalObserver {
         log("Switched language to " + language);
     }
 
-    /** Subscribes this user to a research journal (Observer). */
     public void subscribeToJournal(ResearchJournal journal) { journal.subscribe(this); }
     public void unsubscribeFromJournal(ResearchJournal journal) { journal.unsubscribe(this); }
 
-    /** Observer callback — called when a journal publishes a new paper. */
     @Override
     public void onNewPaperPublished(String journalName, ResearchPaper paper) {
         System.out.println("[Notification → " + firstName + " " + lastName + "] " + "New paper in '" + journalName + "': " + paper.getTitle());
     }
 
-    protected void log(String action) {
+    public void log(String action) {
         activityLog.add(new Date() + " | " + id + " | " + action);
     }
     public List<String> getActivityLog() { return activityLog; }
 
-    /** Returns display name. */
     public String getFullName() { return firstName + " " + lastName; }
 
-    // Getters / Setters
     public String getId() { return id; }
     public void setId(String v) { this.id = v; }
     public Role getRole() { return role; }

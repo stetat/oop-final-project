@@ -1,10 +1,11 @@
 package project.models.actors;
 
 import java.util.*;
-import project.enums.Role;
+
+import project.models.enums.Role;
+import project.models.enums.UrgencyLevel;
 import project.models.others.Message;
 import project.models.others.Request;
-import project.enums.UrgencyLevel;
 
 /**
  * Abstract base for all university employees (Teacher, Manager, Admin, TechSupport).

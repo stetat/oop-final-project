@@ -2,7 +2,8 @@ package project.models.others;
 
 import java.io.Serializable;
 import java.util.Objects;
-import project.enums.LessonType;
+
+import project.models.enums.LessonType;
 
 /** Represents a scheduled lesson (lecture or practice) with room and time. */
 public class Lesson implements Serializable {

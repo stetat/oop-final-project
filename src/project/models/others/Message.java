@@ -3,8 +3,9 @@ package project.models.others;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Objects;
-import project.enums.RequestStatus;
-import project.enums.UrgencyLevel;
+
+import project.models.enums.RequestStatus;
+import project.models.enums.UrgencyLevel;
 
 /** Internal messaging between employees. */
 public class Message implements Serializable {
@@ -13,8 +14,8 @@ public class Message implements Serializable {
     private String content;
     private boolean isRead;
     private Date sentAt;
-    private String senderId;    // Employee ID
-    private String receiverId;  // Employee ID
+    private String senderId;    
+    private String receiverId;  
 
     public Message() { sentAt = new Date(); }
     public Message(String senderId, String receiverId, String content) {

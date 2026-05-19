@@ -2,7 +2,9 @@ package project.models.others;
 
 import java.io.Serializable;
 import java.util.*;
-import project.enums.CourseType;
+
+import project.models.enums.CourseType;
+import project.models.enums.School;
 
 /**
  * Represents a university course. Contains lessons, marks per student, and instructor list.
@@ -15,6 +17,7 @@ public class Course implements Serializable {
     private int credits;
     private CourseType courseType;
     private int targetYear;
+    private School school;
     private Vector<Lesson> lessons;
     private Map<String, Vector<Mark>> marks;
     private Vector<String> instructorIds;
@@ -28,10 +31,12 @@ public class Course implements Serializable {
     public Course(String courseCode, String courseName, int credits, CourseType type, int targetYear) {
         this(courseCode, courseName, credits); this.courseType = type; this.targetYear = targetYear;
     }
+    public Course(String courseCode, String courseName, int credits, CourseType type, int targetYear, School school) {
+        this(courseCode, courseName, credits, type, targetYear); this.school = school;
+    }
 
     public void addLesson(Lesson lesson) { if (lesson != null) lessons.add(lesson); }
 
-    /** Assigns a mark to a student (by studentId). */
     public void assignMark(String studentId, Mark mark) {
         marks.computeIfAbsent(studentId, k -> new Vector<>()).add(mark);
     }
@@ -39,7 +44,6 @@ public class Course implements Serializable {
     public void addInstructorId(String teacherId) { if (!instructorIds.contains(teacherId)) instructorIds.add(teacherId); }
     public void removeInstructorId(String teacherId) { instructorIds.remove(teacherId); }
 
-    /** Returns latest mark for a student, or null. */
     public Mark getLatestMark(String studentId) {
         Vector<Mark> m = marks.get(studentId);
         return (m != null && !m.isEmpty()) ? m.lastElement() : null;
@@ -55,6 +59,8 @@ public class Course implements Serializable {
     public void setCourseType(CourseType v) { this.courseType = v; }
     public int getTargetYear() { return targetYear; }
     public void setTargetYear(int v) { this.targetYear = v; }
+    public School getSchool() { return school; }
+    public void setSchool(School v) { this.school = v; }
     public Vector<Lesson> getLessons() { return lessons; }
     public void setLessons(Vector<Lesson> v) { this.lessons = v; }
     public Map<String, Vector<Mark>> getMarks() { return marks; }
@@ -70,6 +76,7 @@ public class Course implements Serializable {
         return Objects.equals(courseCode, o.courseCode) && Objects.equals(courseName, o.courseName);
     }
     @Override public String toString() {
-        return "Course[" + courseCode + " | " + courseName + " | " + credits + " cr | " + courseType + " | yr" + targetYear + "]";
+        return "Course[" + courseCode + " | " + courseName + " | " + credits + " cr | " + courseType +
+               (school != null ? " | " + school : "") + " | yr" + targetYear + "]";
     }
 }

@@ -3,8 +3,9 @@ package project.models.others;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Objects;
-import project.enums.RequestStatus;
-import project.enums.UrgencyLevel;
+
+import project.models.enums.RequestStatus;
+import project.models.enums.UrgencyLevel;
 
 /** Tech-support request submitted by any employee. Status lifecycle: VIEWED → ACCEPTED/REJECTED → DONE. */
 public class Request implements Serializable {
