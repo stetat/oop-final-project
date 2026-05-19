@@ -1,0 +1,1180 @@
+@startuml KBTU_ClassDiagram
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam class {
+  BackgroundColor White
+  BorderColor #555
+  HeaderBackgroundColor #DDEEFF
+}
+
+' ═══════════════════════════════════════════════════
+'  ENUMS
+' ═══════════════════════════════════════════════════
+package "project.models.enums" #FFFDE7 {
+
+  enum Role {
+    STUDENT
+    TEACHER
+    MANAGER
+    ADMIN
+    TECH_SUPPORT
+  }
+
+  enum School {
+    SITE
+    BS
+    ISE
+    SEPI
+    KMA
+    SAM
+    SG
+    SMST
+    SNSS
+  }
+
+  enum TeacherTitle {
+    TUTOR
+    LECTOR
+    SENIOR_LECTOR
+    PROFESSOR
+    MASTER
+    PHD
+  }
+
+  enum ManagerType {
+    OR
+    DEPARTMENTS
+  }
+
+  enum CourseType {
+    MAJOR
+    MINOR
+    FREE_ELECTIVE
+  }
+
+  enum LessonType {
+    LECTURE
+    PRACTICE
+  }
+
+  enum RequestStatus {
+    VIEWED
+    ACCEPTED
+    REJECTED
+    DONE
+  }
+
+  enum UrgencyLevel {
+    LOW
+    MEDIUM
+    HIGH
+  }
+
+  enum LanguageType {
+    KZ
+    RU
+    EN
+  }
+
+  enum UserType {
+        STUDENT
+        GRADUATE_STUDENT
+        TEACHER
+        MANAGER
+        ADMIN
+        TECH_SUPPORT
+  }
+}
+
+' ═══════════════════════════════════════════════════
+'  ERRORS
+' ═══════════════════════════════════════════════════
+package "project.models.errors" #FFF3E0 {
+
+  class InvalidSupervisorException {
+    +InvalidSupervisorException(msg: String)
+  }
+
+  class NotResearcherException {
+    +NotResearcherException(msg: String)
+  }
+}
+
+' ═══════════════════════════════════════════════════
+'  PATTERNS
+' ═══════════════════════════════════════════════════
+package "project.patterns" #E8F5E9 {
+
+  interface JournalObserver {
+    +onNewPaperPublished(journalName: String, paper: ResearchPaper): void
+  }
+
+  class ResearchJournal {
+    -{static} serialVersionUID: long
+    -name: String
+    -papers: List<ResearchPaper>
+    -subscribers: List<JournalObserver>
+    +ResearchJournal(name: String)
+    +subscribe(observer: JournalObserver): void
+    +unsubscribe(observer: JournalObserver): void
+    +publishPaper(paper: ResearchPaper): void
+    +getName(): String
+    +getPapers(): List<ResearchPaper>
+    -readResolve(): Object
+  }
+
+  class ResearcherDecorator {
+    -{static} serialVersionUID: long
+    -{static} CITATION_MILESTONES: int[]
+    -wrappedUser: User
+    -extraPapers: List<ResearchPaper>
+    +ResearcherDecorator(user: User)
+    +addResearchPaper(paper: ResearchPaper): void
+    +addCitation(paper: ResearchPaper): void
+    +calculateHIndex(): double
+    +printPapers(comparator: Comparator<ResearchPaper>): void
+    +getResearchPapersList(): List<ResearchPaper>
+    +getWrappedUser(): User
+    +getId(): String
+    +setId(v: String): void
+    +getRole(): Role
+    +setRole(v: Role): void
+    +getPassword(): String
+    +setPassword(v: String): void
+    +getFirstName(): String
+    +setFirstName(v: String): void
+    +getLastName(): String
+    +setLastName(v: String): void
+    +getEmail(): String
+    +setEmail(v: String): void
+    +getLanguage(): LanguageType
+    +setLanguage(v: LanguageType): void
+    +getFullName(): String
+    +log(action: String): void
+    +getActivityLog(): List<String>
+    +switchLanguage(l: LanguageType): void
+    +subscribeToJournal(journal: ResearchJournal): void
+    +unsubscribeFromJournal(journal: ResearchJournal): void
+    +onNewPaperPublished(journalName: String, paper: ResearchPaper): void
+    +hashCode(): int
+    +equals(obj: Object): boolean
+  }
+
+  class UserFactory {
+    +{static} createUser(type: UserType, id: String, password: String, firstName: String, lastName: String, email: String): User
+    +{static} createTeacher(id: String, password: String, firstName: String, lastName: String, email: String, salary: double, title: TeacherTitle): Teacher
+    +{static} createManager(id: String, password: String, firstName: String, lastName: String, email: String, salary: double, type: ManagerType): Manager
+    +{static} createGraduateStudent(id: String, password: String, firstName: String, lastName: String, email: String, isPhD: boolean): GraduateStudent
+  }
+
+  class PaperComparators {
+    +{static} BY_CITATIONS_DESC: Comparator<ResearchPaper>
+    +{static} BY_CITATIONS_ASC: Comparator<ResearchPaper>
+    +{static} BY_DATE_DESC: Comparator<ResearchPaper>
+    +{static} BY_LENGTH_DESC: Comparator<ResearchPaper>
+    +{static} BY_TITLE: Comparator<ResearchPaper>
+  }
+}
+
+' ═══════════════════════════════════════════════════
+'  ACTORS
+' ═══════════════════════════════════════════════════
+package "project.models.actors" #E3F2FD {
+
+  abstract class User {
+    -{static} serialVersionUID: long
+    -id: String
+    -role: Role
+    -password: String
+    -firstName: String
+    -lastName: String
+    -email: String
+    -language: LanguageType
+    -activityLog: List<String>
+    +User()
+    +User(id: String, password: String, firstName: String, lastName: String, email: String, role: Role)
+    +switchLanguage(language: LanguageType): void
+    +subscribeToJournal(journal: ResearchJournal): void
+    +unsubscribeFromJournal(journal: ResearchJournal): void
+    +onNewPaperPublished(journalName: String, paper: ResearchPaper): void
+    +log(action: String): void
+    +getActivityLog(): List<String>
+    +getFullName(): String
+    +getId(): String
+    +setId(v: String): void
+    +getRole(): Role
+    +setRole(v: Role): void
+    +getPassword(): String
+    +setPassword(v: String): void
+    +getFirstName(): String
+    +setFirstName(v: String): void
+    +getLastName(): String
+    +setLastName(v: String): void
+    +getEmail(): String
+    +setEmail(v: String): void
+    +getLanguage(): LanguageType
+    +setLanguage(v: LanguageType): void
+    +hashCode(): int
+    +equals(obj: Object): boolean
+  }
+
+  abstract class Employee {
+    -{static} serialVersionUID: long
+    -salary: double
+    +Employee()
+    +Employee(id: String, password: String, firstName: String, lastName: String, email: String, salary: double, role: Role)
+    +getSalary(): double
+    +setSalary(v: double): void
+  }
+
+  class Admin {
+    -{static} serialVersionUID: long
+    +Admin()
+    +Admin(id: String, password: String, firstName: String, lastName: String, email: String, salary: double)
+    +toString(): String
+  }
+
+  class Manager {
+    -{static} serialVersionUID: long
+    -type: ManagerType
+    +Manager()
+    +Manager(id: String, password: String, firstName: String, lastName: String, email: String, salary: double, type: ManagerType)
+    +getType(): ManagerType
+    +setType(v: ManagerType): void
+    +toString(): String
+  }
+
+  class Teacher {
+    -{static} serialVersionUID: long
+    -title: TeacherTitle
+    -school: School
+    +Teacher()
+    +Teacher(id: String, password: String, firstName: String, lastName: String, email: String, salary: double, title: TeacherTitle)
+    +getTitle(): TeacherTitle
+    +setTitle(v: TeacherTitle): void
+    +getSchool(): School
+    +setSchool(v: School): void
+    +toString(): String
+  }
+
+  class TechSupportSpecialist {
+    -{static} serialVersionUID: long
+    +TechSupportSpecialist()
+    +TechSupportSpecialist(id: String, password: String, firstName: String, lastName: String, email: String, salary: double)
+    +getNewRequests(): List<Request>
+    +acceptRequest(requestId: String): void
+    +rejectRequest(requestId: String): void
+    +markAsDone(requestId: String): void
+    +viewRequest(requestId: String): void
+    -updateRequestStatus(requestId: String, newStatus: RequestStatus): void
+    +toString(): String
+  }
+
+  class Student {
+    -{static} serialVersionUID: long
+    -{static} MAX_CREDITS: int
+    -{static} MAX_FAIL_COUNT: int
+    -gpa: double
+    -yearOfStudy: int
+    -totalCredits: int
+    -failCount: int
+    -organization: String
+    -isOrganizationHead: boolean
+    -school: School
+    -registeredCourseIds: List<String>
+    +Student()
+    +Student(id: String, password: String, firstName: String, lastName: String, email: String)
+    +registerForCourse(course: Course): boolean
+    +dropCourse(course: Course): boolean
+    +incrementFailCount(): void
+    +hasExceededFailLimit(): boolean
+    +viewTranscript(): void
+    +recalculateGpa(): void
+    +recalculateFailCount(): void
+    +getGpa(): double
+    +setGpa(v: double): void
+    +getYearOfStudy(): int
+    +setYearOfStudy(v: int): void
+    +getTotalCredits(): int
+    +setTotalCredits(v: int): void
+    +getFailCount(): int
+    +setFailCount(v: int): void
+    +getOrganization(): String
+    +setOrganization(v: String): void
+    +isOrganizationHead(): boolean
+    +setOrganizationHead(v: boolean): void
+    +getSchool(): School
+    +setSchool(v: School): void
+    +getRegisteredCourseIds(): List<String>
+    +setRegisteredCourseIds(v: List<String>): void
+    +toString(): String
+  }
+
+  class GraduateStudent {
+    -{static} serialVersionUID: long
+    -{static} MIN_SUPERVISOR_H_INDEX: double
+    -diplomaProjects: List<ResearchPaper>
+    -researchSupervisor: ResearcherDecorator
+    -supervisorId: String
+    -isPhD: boolean
+    +GraduateStudent()
+    +GraduateStudent(id: String, password: String, firstName: String, lastName: String, email: String)
+    +GraduateStudent(id: String, password: String, firstName: String, lastName: String, email: String, isPhD: boolean)
+    +setResearchSupervisor(supervisor: ResearcherDecorator): void
+    +addDiplomaProject(paper: ResearchPaper): void
+    +getDiplomaProjects(): List<ResearchPaper>
+    +setDiplomaProjects(v: List<ResearchPaper>): void
+    +getResearchSupervisor(): ResearcherDecorator
+    +getSupervisorId(): String
+    +isPhD(): boolean
+    +setPhD(v: boolean): void
+    +toString(): String
+  }
+}
+
+' ═══════════════════════════════════════════════════
+'  OTHERS (Domain Objects)
+' ═══════════════════════════════════════════════════
+package "project.models.others" #FCE4EC {
+
+  interface Researcher {
+    +calculateHIndex(): double
+    +printPapers(comparator: Comparator<ResearchPaper>): void
+    +getResearchPapersList(): List<ResearchPaper>
+  }
+
+  class Course {
+    -{static} serialVersionUID: long
+    -courseCode: String
+    -courseName: String
+    -credits: int
+    -courseType: CourseType
+    -targetYear: int
+    -school: School
+    -lessons: Vector<Lesson>
+    -marks: Map<String, Vector<Mark>>
+    -instructorIds: Vector<String>
+    +Course()
+    +Course(courseCode: String, courseName: String, credits: int)
+    +Course(courseCode: String, courseName: String, credits: int, type: CourseType, targetYear: int)
+    +Course(courseCode: String, courseName: String, credits: int, type: CourseType, targetYear: int, school: School)
+    +addLesson(lesson: Lesson): void
+    +assignMark(studentId: String, mark: Mark): void
+    +addInstructorId(teacherId: String): void
+    +removeInstructorId(teacherId: String): void
+    +getLatestMark(studentId: String): Mark
+    +getCourseCode(): String
+    +setCourseCode(v: String): void
+    +getCourseName(): String
+    +setCourseName(v: String): void
+    +getCredits(): int
+    +setCredits(v: int): void
+    +getCourseType(): CourseType
+    +setCourseType(v: CourseType): void
+    +getTargetYear(): int
+    +setTargetYear(v: int): void
+    +getSchool(): School
+    +setSchool(v: School): void
+    +getLessons(): Vector<Lesson>
+    +getMarks(): Map<String, Vector<Mark>>
+    +getInstructorIds(): Vector<String>
+    +hashCode(): int
+    +equals(obj: Object): boolean
+    +toString(): String
+  }
+
+  class Lesson {
+    -{static} serialVersionUID: long
+    -type: LessonType
+    -room: String
+    -time: String
+    +Lesson()
+    +Lesson(type: LessonType, room: String, time: String)
+    +getType(): LessonType
+    +setType(t: LessonType): void
+    +getRoom(): String
+    +setRoom(r: String): void
+    +getTime(): String
+    +setTime(t: String): void
+    +hashCode(): int
+    +equals(obj: Object): boolean
+    +toString(): String
+  }
+
+  class Mark {
+    -{static} serialVersionUID: long
+    -firstAttestation: double
+    -secondAttestation: double
+    -finalExam: double
+    -courseCode: String
+    -studentId: String
+    +Mark()
+    +Mark(first: double, second: double, finalExam: double)
+    +Mark(studentId: String, courseCode: String, first: double, second: double, finalExam: double)
+    +getTotal(): double
+    +getLetterGrade(): String
+    +getGradePoints(): double
+    +isPassed(): boolean
+    +getFirstAttestation(): double
+    +setFirstAttestation(v: double): void
+    +getSecondAttestation(): double
+    +setSecondAttestation(v: double): void
+    +getFinalExam(): double
+    +setFinalExam(v: double): void
+    +getCourseCode(): String
+    +setCourseCode(c: String): void
+    +getStudentId(): String
+    +setStudentId(s: String): void
+    +hashCode(): int
+    +equals(obj: Object): boolean
+    +toString(): String
+  }
+
+  class News {
+    -{static} serialVersionUID: long
+    -newsId: String
+    -title: String
+    -content: String
+    -isResearchNews: boolean
+    -comments: Vector<String>
+    -publishedAt: Date
+    +News()
+    +News(title: String, content: String, isResearchNews: boolean)
+    +addComment(comment: String): void
+    +compareTo(o: News): int
+    +getNewsId(): String
+    +setNewsId(v: String): void
+    +getTitle(): String
+    +setTitle(v: String): void
+    +getContent(): String
+    +setContent(v: String): void
+    +isResearchNews(): boolean
+    +setResearchNews(v: boolean): void
+    +getComments(): Vector<String>
+    +setComments(v: Vector<String>): void
+    +getPublishedAt(): Date
+    +setPublishedAt(v: Date): void
+    +hashCode(): int
+    +equals(obj: Object): boolean
+    +toString(): String
+  }
+
+  class Request {
+    -{static} serialVersionUID: long
+    -requestId: String
+    -title: String
+    -description: String
+    -status: RequestStatus
+    -urgencyLevel: UrgencyLevel
+    -createdAt: Date
+    -requesterId: String
+    +Request()
+    +Request(title: String, description: String, urgency: UrgencyLevel, requesterId: String)
+    +getRequestId(): String
+    +setRequestId(v: String): void
+    +getTitle(): String
+    +setTitle(v: String): void
+    +getDescription(): String
+    +setDescription(v: String): void
+    +getStatus(): RequestStatus
+    +setStatus(v: RequestStatus): void
+    +getUrgencyLevel(): UrgencyLevel
+    +setUrgencyLevel(v: UrgencyLevel): void
+    +getCreatedAt(): Date
+    +setCreatedAt(v: Date): void
+    +getRequesterId(): String
+    +setRequesterId(v: String): void
+    +hashCode(): int
+    +equals(obj: Object): boolean
+    +toString(): String
+  }
+
+  class CourseRegistrationRequest {
+    -{static} serialVersionUID: long
+    -courseCode: String
+    +CourseRegistrationRequest(studentId: String, courseCode: String)
+    +getCourseCode(): String
+  }
+
+  class ResearcherRequest {
+    -{static} serialVersionUID: long
+    +ResearcherRequest(requesterId: String)
+  }
+
+  class ProjectJoinRequest {
+    -{static} serialVersionUID: long
+    -projectId: String
+    +ProjectJoinRequest(requesterId: String, requesterName: String, projectId: String, projectTopic: String)
+    +getProjectId(): String
+  }
+
+  class OrgJoinRequest {
+    -{static} serialVersionUID: long
+    -orgId: String
+    +OrgJoinRequest(requesterId: String, requesterName: String, orgId: String, orgName: String)
+    +getOrgId(): String
+  }
+
+  class ResearchPaper {
+    -{static} serialVersionUID: long
+    -title: String
+    -authors: String
+    -journal: String
+    -citations: int
+    -doi: String
+    -publishDate: Date
+    -pages: int
+    -paperCitations: List<Citation>
+    -projectId: String
+    +ResearchPaper()
+    +ResearchPaper(title: String, authors: String, journal: String, citations: int, doi: String, publishDate: Date, pages: int)
+    +getCitation(format: String): String
+    +compareTo(o: ResearchPaper): int
+    +getTitle(): String
+    +setTitle(t: String): void
+    +getAuthors(): String
+    +setAuthors(a: String): void
+    +getJournal(): String
+    +setJournal(j: String): void
+    +getCitations(): int
+    +setCitations(c: int): void
+    +getDoi(): String
+    +setDoi(d: String): void
+    +getPublishDate(): Date
+    +setPublishDate(pd: Date): void
+    +getPages(): int
+    +setPages(p: int): void
+    +getProjectId(): String
+    +setProjectId(p: String): void
+    +getPaperCitations(): List<Citation>
+    +addPaperCitation(c: Citation): void
+    +hashCode(): int
+    +equals(obj: Object): boolean
+    +toString(): String
+  }
+
+  class ResearchProject {
+    -{static} serialVersionUID: long
+    -id: String
+    -ownerId: String
+    -topic: String
+    -publishedPapers: Vector<ResearchPaper>
+    -participants: Vector<ResearcherDecorator>
+    +ResearchProject()
+    +ResearchProject(topic: String)
+    +addParticipant(researcher: ResearcherDecorator): void
+    +addUser(user: Object): void
+    +addPaper(paper: ResearchPaper): void
+    +removePaper(paper: ResearchPaper): void
+    +getId(): String
+    +setId(id: String): void
+    +getOwnerId(): String
+    +setOwnerId(o: String): void
+    +getTopic(): String
+    +setTopic(t: String): void
+    +getPublishedPapers(): Vector<ResearchPaper>
+    +setPublishedPapers(p: Vector<ResearchPaper>): void
+    +getParticipants(): Vector<ResearcherDecorator>
+    +setParticipants(p: Vector<ResearcherDecorator>): void
+    +hashCode(): int
+    +equals(obj: Object): boolean
+    +toString(): String
+  }
+
+  class Citation {
+    -{static} serialVersionUID: long
+    -citerId: String
+    -citerName: String
+    -text: String
+    -createdAt: Date
+    +Citation()
+    +Citation(citerId: String, citerName: String, text: String)
+    +getCiterId(): String
+    +getCiterName(): String
+    +getText(): String
+    +getCreatedAt(): Date
+    +toString(): String
+  }
+
+  class Notification {
+    -{static} serialVersionUID: long
+    -recipientId: String
+    -message: String
+    -read: boolean
+    -createdAt: Date
+    +Notification()
+    +Notification(recipientId: String, message: String)
+    +getRecipientId(): String
+    +getMessage(): String
+    +isRead(): boolean
+    +markRead(): void
+    +getCreatedAt(): Date
+    +toString(): String
+  }
+
+  class Message {
+    -{static} serialVersionUID: long
+    -messageId: String
+    -content: String
+    -isRead: boolean
+    -sentAt: Date
+    -senderId: String
+    -receiverId: String
+    +Message()
+    +Message(senderId: String, receiverId: String, content: String)
+    +markAsRead(): void
+    +getMessageId(): String
+    +setMessageId(v: String): void
+    +getContent(): String
+    +setContent(v: String): void
+    +isRead(): boolean
+    +setRead(v: boolean): void
+    +getSentAt(): Date
+    +setSentAt(v: Date): void
+    +getSenderId(): String
+    +setSenderId(v: String): void
+    +getReceiverId(): String
+    +setReceiverId(v: String): void
+    +hashCode(): int
+    +equals(obj: Object): boolean
+    +toString(): String
+  }
+
+  class Complaint {
+    -{static} serialVersionUID: long
+    -teacherId: String
+    -studentId: String
+    -urgency: UrgencyLevel
+    -content: String
+    -complaintId: String
+    +Complaint()
+    +Complaint(teacherId: String, studentId: String, urgency: UrgencyLevel, content: String)
+    +getComplaintId(): String
+    +getTeacherId(): String
+    +setTeacherId(v: String): void
+    +getStudentId(): String
+    +setStudentId(v: String): void
+    +getUrgency(): UrgencyLevel
+    +setUrgency(v: UrgencyLevel): void
+    +getContent(): String
+    +setContent(v: String): void
+    +hashCode(): int
+    +equals(obj: Object): boolean
+    +toString(): String
+  }
+
+  class Organization {
+    -{static} serialVersionUID: long
+    -id: String
+    -name: String
+    -leadId: String
+    -memberIds: List<String>
+    +Organization()
+    +Organization(name: String, leadId: String)
+    +isMember(userId: String): boolean
+    +addMember(userId: String): void
+    +removeMember(userId: String): void
+    +getId(): String
+    +setId(id: String): void
+    +getName(): String
+    +setName(name: String): void
+    +getLeadId(): String
+    +setLeadId(v: String): void
+    +getMemberIds(): List<String>
+    +setMemberIds(v: List<String>): void
+    +toString(): String
+  }
+
+  class StaffBulletin {
+    -{static} serialVersionUID: long
+    -authorId: String
+    -authorName: String
+    -title: String
+    -body: String
+    -postedAt: Date
+    +StaffBulletin()
+    +StaffBulletin(authorId: String, authorName: String, title: String, body: String)
+    +getAuthorId(): String
+    +getAuthorName(): String
+    +getTitle(): String
+    +getBody(): String
+    +getPostedAt(): Date
+    +toString(): String
+  }
+}
+
+' ═══════════════════════════════════════════════════
+'  STORAGE
+' ═══════════════════════════════════════════════════
+package "project.storage" #EDE7F6 {
+
+  class Database {
+    -{static} serialVersionUID: long
+    -{static} DATA_FILE: String
+    -{static} instance: Database
+    -users: Map<String, User>
+    -courses: Map<String, Course>
+    -newsList: List<News>
+    -newsIdCounter: int
+    -requests: List<Request>
+    -researcherReqIdCounter: int
+    -courseRegIdCounter: int
+    -complaints: List<Complaint>
+    -messages: List<Message>
+    -journals: List<ResearchJournal>
+    -teacherRatings: Map<String, List<Integer>>
+    -projects: List<ResearchProject>
+    -projectIdCounter: int
+    -projectJoinReqIdCounter: int
+    -staffBoard: List<StaffBulletin>
+    -journalSubscriptions: Map<String, List<String>>
+    -notifications: List<Notification>
+    -organizations: List<Organization>
+    -orgIdCounter: int
+    -orgJoinReqIdCounter: int
+    -Database()
+    +{static} getInstance(): Database
+    +saveToDisk(): void
+    -{static} loadFromDisk(): Database
+    +{static} resetInstance(): void
+    +reloadFromDisk(): void
+    +saveUser(user: User): void
+    +removeUser(id: String): void
+    +getUserById(id: String): User
+    +getAllUsers(): Collection<User>
+    +getAllStudents(): List<Student>
+    +getAllStudentsIncludingGrad(): List<Student>
+    +getAllTeachers(): List<Teacher>
+    +promoteToResearcher(user: User): void
+    +saveCourse(course: Course): void
+    +removeCourse(code: String): void
+    +getCourseByCode(code: String): Course
+    +getAllCourses(): Collection<Course>
+    +addNews(news: News): void
+    +removeNews(newsId: String): void
+    +getAllNews(): List<News>
+    +addRequest(req: Request): void
+    +addCourseRegRequest(req: CourseRegistrationRequest): void
+    +addResearcherRequest(req: ResearcherRequest): void
+    +addProjectJoinRequest(req: ProjectJoinRequest): void
+    +getProjectJoinRequestsForOwner(ownerId: String): List<ProjectJoinRequest>
+    +getAllRequests(): List<Request>
+    +getRequestById(id: String): Request
+    +addComplaint(c: Complaint): void
+    +getAllComplaints(): List<Complaint>
+    +addMessage(m: Message): void
+    +getMessagesForUser(userId: String): List<Message>
+    +addJournal(j: ResearchJournal): void
+    +getAllJournals(): List<ResearchJournal>
+    +getJournalByName(n: String): ResearchJournal
+    +addProject(p: ResearchProject): void
+    +getAllProjects(): List<ResearchProject>
+    +getProjectById(id: String): ResearchProject
+    +addTeacherRating(teacherId: String, rating: int): void
+    +getAverageRating(teacherId: String): double
+    +getAllResearchers(): List<ResearcherDecorator>
+    +getTopCitedResearcher(): ResearcherDecorator
+    +getTopCitedResearcherBySchool(school: School): ResearcherDecorator
+    +getTopCitedResearcherOfYear(year: int): ResearcherDecorator
+    +addJournalSubscription(journalName: String, userId: String): void
+    +removeJournalSubscription(journalName: String, userId: String): void
+    +getSubscribersForJournal(journalName: String): List<String>
+    +addNotification(n: Notification): void
+    +getNotificationsForUser(userId: String): List<Notification>
+    +addStaffBulletin(b: StaffBulletin): void
+    +getAllStaffBulletins(): List<StaffBulletin>
+    +addOrganization(org: Organization): void
+    +getAllOrganizations(): List<Organization>
+    +getOrganizationById(id: String): Organization
+    +addOrgJoinRequest(req: OrgJoinRequest): void
+    +getOrgJoinRequestsForLead(leadId: String): List<OrgJoinRequest>
+    +printAllResearchPapers(comparator: Comparator<ResearchPaper>): void
+  }
+}
+
+' ═══════════════════════════════════════════════════
+'  SERVICES
+' ═══════════════════════════════════════════════════
+package "project.services" #F3E5F5 {
+
+  class AuthService {
+    -{static} currentUser: User
+    +{static} login(id: String, password: String): User
+    +{static} logout(): void
+    +{static} getCurrentUser(): User
+    +{static} isLoggedIn(): boolean
+    +{static} hasRole(role: Role): boolean
+    +{static} switchLanguage(user: User, lang: LanguageType): void
+  }
+
+  class AdminService {
+    +addUser(admin: Admin, user: User): void
+    +removeUser(admin: Admin, user: User): void
+    +updateUser(admin: Admin, user: User): void
+    +viewLogFiles(): void
+  }
+
+  class ComplaintService {
+    +fileComplaint(sender: User, studentId: String, urgency: UrgencyLevel, content: String): Complaint
+    +getAllComplaints(): List<Complaint>
+    +getComplaintsAbout(studentId: String): List<Complaint>
+  }
+
+  class CourseService {
+    +listAllCourses(viewer: Student): void
+    +listAllCourses(): void
+    +listCoursesForTeacher(teacher: Teacher): void
+    +studentRegister(student: Student, code: String): void
+    +studentDrop(student: Student, code: String): void
+    +studentViewMarks(student: Student): void
+    +listPendingRegistrations(): void
+    +managerApproveReg(manager: Manager, reqId: String): void
+    +managerRejectReg(manager: Manager, reqId: String): void
+    +addCourse(code: String, name: String, credits: int, courseType: CourseType, targetYear: int, school: School): void
+  }
+
+  class JournalService {
+    +createJournal(name: String): void
+    +listJournals(): void
+    +subscribeJournal(user: User, journalName: String): void
+  }
+
+  class ManagerService {
+    +approveRegistration(manager: Manager, student: Student, course: Course): void
+    +rejectRegistration(manager: Manager, student: Student, course: Course): void
+    +assignCourse(manager: Manager, teacher: Teacher, course: Course): void
+    +unassignCourse(manager: Manager, teacher: Teacher, course: Course): void
+    +addNews(manager: Manager, news: News): void
+    +removeNews(manager: Manager, newsId: String): void
+    +createStatisticalReport(): void
+    +viewStudents(sortBy: String): void
+    +viewTeachers(): void
+    +viewTeacherDetails(teacherId: String): void
+    +addCommentToNews(newsId: String, viewerName: String, comment: String): void
+    +assignCourseById(manager: Manager, teacherId: String, code: String): void
+    +unassignCourseById(manager: Manager, teacherId: String, code: String): void
+  }
+
+  class MarkService {
+    +assignMark(teacher: Teacher, course: Course, studentId: String, first: double, second: double, finalExam: double): void
+  }
+
+  class MessageService {
+    +viewMessages(userId: String): void
+    +sendMessage(senderId: String, receiverId: String, text: String): void
+    +sendMessageToEmployee(senderId: String, receiverId: String, text: String): void
+  }
+
+  class NotificationService {
+    +viewNotifications(userId: String): void
+  }
+
+  class OrganizationService {
+    +createOrganization(student: Student, name: String): void
+    +listOrganizations(): void
+    +joinOrganization(student: Student, orgId: String): void
+    +viewOrgMembers(userId: String): void
+    +listOrgJoinRequests(leadId: String): void
+    +handleOrgJoinRequest(lead: Student, reqId: String, accept: boolean): void
+  }
+
+  class ProjectService {
+    +listProjects(): void
+    +createProject(user: User, topic: String): void
+    +joinProject(user: User, projectId: String): void
+    +listProjectJoinRequests(ownerId: String): void
+    +handleProjectJoinRequest(ownerId: String, reqId: String, accept: boolean): void
+    -getResearcherOf(u: User): ResearcherDecorator
+  }
+
+  class RequestService {
+    +createRequest(requesterId: String, title: String, desc: String, level: UrgencyLevel): void
+    +requestResearcherRole(user: User): void
+    +listResearcherRequests(): void
+    +handleResearcherRequest(reqId: String, approve: boolean): void
+  }
+
+  class ResearchService {
+    +setSupervisor(grad: GraduateStudent, supervisor: ResearcherDecorator): void
+    +addDiplomaProject(grad: GraduateStudent, paper: ResearchPaper): void
+    +addResearcherPaper(user: User, paper: ResearchPaper, projectId: String, journalName: String): void
+    +recordCitation(researcher: ResearcherDecorator, doi: String): void
+    +announceTopCitedResearcher(): void
+    +printTopPapersByCitations(): void
+    +printPapersByDate(): void
+    +addPaper(teacher: Teacher, paper: ResearchPaper): void
+    +getResearchersByTotalCitations(): List<ResearcherDecorator>
+    +printTopCitedBySchool(school: School): void
+    +printTopCitedByYear(year: int): void
+    +addTextCitation(user: User, paper: ResearchPaper, text: String): void
+    -getResearcherOf(u: User): ResearcherDecorator
+  }
+
+  class SalaryService {
+    +giveSalary(employee: Employee, amount: double): void
+  }
+
+  class StaffBoardService {
+    +viewStaffBoard(): void
+    +postToStaffBoard(authorId: String, authorName: String, title: String, body: String): void
+  }
+
+  class TeacherRatingService {
+    +rateTeacher(student: Student, teacherId: String, rating: int): void
+  }
+
+  class UserLookupService {
+    +listStudents(sortBy: String): void
+    +viewStudentDetails(studentId: String): void
+    +viewTeacherDetails(teacherId: String): void
+    +getCoursesForStudent(student: Student): List<Course>
+    +viewTeacherForCourse(courseCode: String): void
+  }
+}
+
+' ═══════════════════════════════════════════════════
+'  ENTRY POINT
+' ═══════════════════════════════════════════════════
+package "project" #E0F2F1 {
+
+  class Main {
+    +{static} main(args: String[]): void
+    -{static} seedDatabase(db: Database): void
+    -{static} demoAuthentication(): void
+    -{static} demoCourseRegistration(db: Database): void
+    -{static} demoMarks(db: Database): void
+    -{static} demoResearch(db: Database): void
+    -{static} demoObserver(db: Database): void
+    -{static} demoComplaintsAndTechSupport(db: Database): void
+    -{static} demoManagerActions(db: Database): void
+    -{static} demoSerialization(db: Database): void
+    -{static} demoPatterns(): void
+    -{static} demoComparators(db: Database): void
+  }
+
+  class InteractiveMenu {
+    -{static} sc: Scanner
+    -{static} db: Database
+    -{static} adminService: AdminService
+    -{static} complaintService: ComplaintService
+    -{static} courseService: CourseService
+    -{static} journalService: JournalService
+    -{static} managerService: ManagerService
+    -{static} markService: MarkService
+    -{static} messageService: MessageService
+    -{static} notificationService: NotificationService
+    -{static} organizationService: OrganizationService
+    -{static} projectService: ProjectService
+    -{static} requestService: RequestService
+    -{static} researchService: ResearchService
+    -{static} staffBoardService: StaffBoardService
+    -{static} teacherRatingService: TeacherRatingService
+    -{static} userLookupService: UserLookupService
+    +{static} run(): void
+    -{static} handleAuthPrompt(): void
+    -{static} doLogin(): void
+    -{static} doRegister(): void
+    -{static} handleRoleMenu(): void
+    -{static} showStudentMenu(student: Student, rd: ResearcherDecorator): void
+    -{static} showGradStudentMenu(grad: GraduateStudent, rd: ResearcherDecorator): void
+    -{static} showTeacherMenu(teacher: Teacher, rd: ResearcherDecorator): void
+    -{static} showManagerMenu(manager: Manager): void
+    -{static} showAdminMenu(admin: Admin): void
+    -{static} showTechSupportMenu(tech: TechSupportSpecialist): void
+    -{static} setSupervisorInteractive(grad: GraduateStudent): void
+    -{static} addDiplomaProjectInteractive(grad: GraduateStudent): void
+    -{static} addResearcherPaper(user: User): void
+    -{static} recordCitation(researcher: ResearcherDecorator): void
+    -{static} printPapersInteractive(researcher: ResearcherDecorator): void
+    -{static} listProjectsInteractive(): void
+    -{static} createProjectInteractive(user: User): void
+    -{static} joinProjectInteractive(user: User): void
+    -{static} createOrganizationInteractive(student: Student): void
+    -{static} joinOrganizationInteractive(student: Student): void
+    -{static} postToStaffBoardInteractive(author: User): void
+    -{static} createJournalInteractive(): void
+    -{static} createRequest(requesterId: String): void
+    -{static} assignMark(teacher: Teacher): void
+    -{static} sendComplaint(teacher: Teacher): void
+    -{static} isResearchTitle(t: TeacherTitle): boolean
+    -{static} baseUser(u: User): User
+    -{static} asTeacher(u: User): Teacher
+    -{static} asStudent(u: User): Student
+    -{static} getResearcherOf(u: User): ResearcherDecorator
+    -{static} pickPaperComparator(): Comparator<ResearchPaper>
+    -{static} printTopCitedResearcher(): void
+    -{static} printAllResearchPapersInteractive(viewer: User): void
+    -{static} studentViewTeacher(student: Student): void
+    -{static} viewNews(viewer: User): void
+    -{static} switchLanguage(user: User, lang: String): void
+    -{static} printBanner(): void
+    -{static} printHelp(commands: String[]): void
+    -{static} readLine(): String
+    -{static} readInt(): int
+    -{static} readDouble(): double
+  }
+
+  class I18n {
+    -{static} lang: LanguageType
+    -{static} T: Map<LanguageType, Map<String, String> >
+    +{static} get(key: String): String
+    +{static} setLang(l: LanguageType): void
+    +{static} getLang(): LanguageType
+    -{static} d(en: Map, kz: Map, ru: Map, key: String, enVal: String, kzVal: String, ruVal: String): void
+  }
+}
+
+' ═══════════════════════════════════════════════════
+'  RELATIONSHIPS
+' ═══════════════════════════════════════════════════
+
+' ── Inheritance (actors) ──
+User <|-- Employee
+User <|-- Student
+Employee <|-- Admin
+Employee <|-- Manager
+Employee <|-- Teacher
+Employee <|-- TechSupportSpecialist
+Student <|-- GraduateStudent
+
+' ── Decorator inherits User ──
+User <|-- ResearcherDecorator
+
+' ── Interface realizations ──
+JournalObserver <|.. User
+Researcher <|.. ResearcherDecorator
+
+' ── Request subclasses ──
+Request <|-- CourseRegistrationRequest
+Request <|-- ResearcherRequest
+Request <|-- ProjectJoinRequest
+Request <|-- OrgJoinRequest
+
+' ── Decorator pattern: ResearcherDecorator wraps a User (composition) ──
+ResearcherDecorator *-right- User : wraps >
+
+' ── GraduateStudent references supervisor ──
+GraduateStudent --> ResearcherDecorator : researchSupervisor
+
+' ── GraduateStudent owns diploma projects ──
+GraduateStudent o-- ResearchPaper : diplomaProjects
+
+' ── ResearcherDecorator owns research papers ──
+ResearcherDecorator o-- ResearchPaper : extraPapers
+
+' ── ResearchJournal publishes ResearchPapers ──
+ResearchJournal o-- ResearchPaper : papers
+ResearchJournal o-- JournalObserver : subscribers
+
+' ── ResearchProject contains papers and researcher participants ──
+ResearchProject o-- ResearchPaper : publishedPapers
+ResearchProject o-- ResearcherDecorator : participants
+
+' ── ResearchProject throws NotResearcherException ──
+ResearchProject ..> NotResearcherException : <<throws>>
+
+' ── GraduateStudent throws InvalidSupervisorException ──
+GraduateStudent ..> InvalidSupervisorException : <<throws>>
+
+' ── Course composition ──
+Course *-- Lesson : lessons
+Course *-- Mark : marks
+
+' ── Course enum associations ──
+Course --> CourseType
+Course --> School
+
+' ── Lesson enum association ──
+Lesson --> LessonType
+
+' ── Request enum associations ──
+Request --> RequestStatus
+Request --> UrgencyLevel
+
+' ── Complaint enum association ──
+Complaint --> UrgencyLevel
+
+' ── User enum associations ──
+User --> Role
+User --> LanguageType
+
+' ── Teacher enum associations ──
+Teacher --> TeacherTitle
+Teacher --> School
+
+' ── Manager enum association ──
+Manager --> ManagerType
+
+' ── Student enum association ──
+Student --> School
+
+' ── ResearchPaper composition ──
+ResearchPaper *-- Citation : paperCitations
+
+' ── Database singleton (composition — owns all collections) ──
+Database *-- User : users
+Database *-- Course : courses
+Database *-- News : newsList
+Database *-- Request : requests
+Database *-- Complaint : complaints
+Database *-- Message : messages
+Database *-- ResearchJournal : journals
+Database *-- ResearchProject : projects
+Database *-- Notification : notifications
+Database *-- StaffBulletin : staffBoard
+Database *-- Organization : organizations
+
+' ── Services use Database ──
+AuthService ..> Database : uses
+AdminService ..> Database : uses
+ComplaintService ..> Database : uses
+CourseService ..> Database : uses
+JournalService ..> Database : uses
+ManagerService ..> Database : uses
+MarkService ..> Database : uses
+MessageService ..> Database : uses
+NotificationService ..> Database : uses
+OrganizationService ..> Database : uses
+ProjectService ..> Database : uses
+RequestService ..> Database : uses
+ResearchService ..> Database : uses
+SalaryService ..> Database : uses
+StaffBoardService ..> Database : uses
+TeacherRatingService ..> Database : uses
+UserLookupService ..> Database : uses
+
+' ── InteractiveMenu depends on services and Database ──
+InteractiveMenu ..> AuthService : uses
+InteractiveMenu ..> AdminService : uses
+InteractiveMenu ..> CourseService : uses
+InteractiveMenu ..> ManagerService : uses
+InteractiveMenu ..> MarkService : uses
+InteractiveMenu ..> MessageService : uses
+InteractiveMenu ..> NotificationService : uses
+InteractiveMenu ..> OrganizationService : uses
+InteractiveMenu ..> ProjectService : uses
+InteractiveMenu ..> RequestService : uses
+InteractiveMenu ..> ResearchService : uses
+InteractiveMenu ..> StaffBoardService : uses
+InteractiveMenu ..> TeacherRatingService : uses
+InteractiveMenu ..> UserLookupService : uses
+InteractiveMenu ..> JournalService : uses
+InteractiveMenu ..> ComplaintService : uses
+InteractiveMenu ..> Database : uses
+
+' ── UserFactory creates actor instances ──
+UserFactory ..> Teacher : <<creates>>
+UserFactory ..> Manager : <<creates>>
+UserFactory ..> GraduateStudent : <<creates>>
+UserFactory ..> Student : <<creates>>
+UserFactory ..> Admin : <<creates>>
+UserFactory ..> TechSupportSpecialist : <<creates>>
+UserFactory +-- UserType
+
+' ── Main uses Database and services ──
+Main ..> Database : uses
+Main ..> AuthService : uses
+Main ..> InteractiveMenu : <<invokes>>
+
+@enduml

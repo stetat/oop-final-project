@@ -1,0 +1,336 @@
+@startuml KBTU_UseCaseDiagram
+left to right direction
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+skinparam usecase {
+  BackgroundColor #FFFDE7
+  BorderColor #888
+  ArrowColor #555
+}
+skinparam actor {
+  BackgroundColor #E3F2FD
+  BorderColor #1565C0
+}
+
+' ── ACTORS ──
+actor "Guest\n(Unauthenticated)" as Guest
+actor "Student" as Student
+actor "Graduate\nStudent" as Grad
+actor "Teacher" as Teacher
+actor "Manager" as Manager
+actor "Admin" as Admin
+actor "TechSupport\nSpecialist" as TechSupport
+
+' GraduateStudent specializes Student
+Student <|-- Grad
+
+rectangle "KBTU University System" {
+
+  ' ────────────────────────────────────────────
+  '  AUTHENTICATION
+  ' ────────────────────────────────────────────
+  package "Authentication & Profile" {
+    usecase "Login" as UC_Login
+    usecase "Register Account" as UC_Register
+    usecase "Logout" as UC_Logout
+    usecase "Switch Language\n(KZ / RU / EN)" as UC_Language
+  }
+
+  ' ────────────────────────────────────────────
+  '  COURSE MANAGEMENT
+  ' ────────────────────────────────────────────
+  package "Course Management" {
+    usecase "View Available Courses" as UC_ViewCourses
+    usecase "Submit Course\nRegistration Request" as UC_RegCourse
+    usecase "Drop Course" as UC_DropCourse
+    usecase "View Marks & GPA" as UC_ViewMarks
+    usecase "View Transcript" as UC_Transcript
+    usecase "View Instructor Info" as UC_TeacherInfo
+    usecase "Rate Teacher" as UC_Rate
+    usecase "Assign Mark to Student" as UC_AssignMark
+    usecase "View Pending\nRegistrations" as UC_PendingRegs
+    usecase "Approve Course\nRegistration" as UC_ApproveReg
+    usecase "Reject Course\nRegistration" as UC_RejectReg
+    usecase "Add New Course" as UC_AddCourse
+    usecase "Assign Teacher\nto Course" as UC_AssignTeacher
+    usecase "Unassign Teacher\nfrom Course" as UC_UnassignTeacher
+  }
+
+  ' ────────────────────────────────────────────
+  '  RESEARCH
+  ' ────────────────────────────────────────────
+  package "Research Management" {
+    usecase "Add Research Paper" as UC_AddPaper
+    usecase "View Own\nResearch Papers" as UC_ViewPapers
+    usecase "Record Citation\nfor a Paper" as UC_RecordCite
+    usecase "Calculate H-Index" as UC_HIndex
+    usecase "Add Text Citation\nto Any Paper" as UC_TextCite
+    usecase "View All\nResearch Papers" as UC_AllPapers
+    usecase "View Top Cited\nResearcher" as UC_TopCited
+    usecase "Set Research\nSupervisor" as UC_SetSupervisor
+    usecase "View Research\nSupervisor" as UC_ViewSupervisor
+    usecase "Add Diploma Project" as UC_AddDiploma
+    usecase "View Diploma Projects" as UC_ViewDiploma
+    usecase "Create Research\nProject" as UC_CreateProject
+    usecase "Join Research\nProject" as UC_JoinProject
+    usecase "Manage Project\nJoin Requests" as UC_ProjectReqs
+    usecase "Request Researcher\nRole" as UC_BecomeResearcher
+    usecase "Approve Researcher\nRole Request" as UC_ApproveResearcher
+    usecase "Reject Researcher\nRole Request" as UC_RejectResearcher
+  }
+
+  ' ────────────────────────────────────────────
+  '  JOURNAL
+  ' ────────────────────────────────────────────
+  package "Journal Management" {
+    usecase "View Journals" as UC_ViewJournals
+    usecase "Subscribe to Journal" as UC_Subscribe
+    usecase "Create Research Journal" as UC_CreateJournal
+  }
+
+  ' ────────────────────────────────────────────
+  '  NEWS
+  ' ────────────────────────────────────────────
+  package "News Management" {
+    usecase "View University News" as UC_ViewNews
+    usecase "Comment on News" as UC_CommentNews
+    usecase "Add News Item" as UC_AddNews
+    usecase "Remove News Item" as UC_RemoveNews
+  }
+
+  ' ────────────────────────────────────────────
+  '  COMMUNICATION
+  ' ────────────────────────────────────────────
+  package "Communication" {
+    usecase "View Messages" as UC_ViewMessages
+    usecase "Send Message" as UC_SendMessage
+    usecase "View Notifications" as UC_ViewNotif
+    usecase "View Staff\nBulletin Board" as UC_ViewBoard
+    usecase "Post to Staff\nBulletin Board" as UC_PostBoard
+  }
+
+  ' ────────────────────────────────────────────
+  '  TECH SUPPORT
+  ' ────────────────────────────────────────────
+  package "Tech Support" {
+    usecase "Create Support\nRequest" as UC_CreateReq
+    usecase "View New Requests" as UC_ViewNewReqs
+    usecase "View All Requests" as UC_ViewAllReqs
+    usecase "View Request Details" as UC_ViewReqDetail
+    usecase "Accept Request" as UC_AcceptReq
+    usecase "Reject Request" as UC_RejectReq
+    usecase "Mark Request\nas Done" as UC_DoneReq
+  }
+
+  ' ────────────────────────────────────────────
+  '  STUDENT ORGANIZATIONS
+  ' ────────────────────────────────────────────
+  package "Student Organizations" {
+    usecase "Create Organization" as UC_CreateOrg
+    usecase "View Organizations" as UC_ViewOrgs
+    usecase "Join Organization" as UC_JoinOrg
+    usecase "View Org Members" as UC_OrgMembers
+    usecase "Manage Org\nJoin Requests" as UC_OrgReqs
+  }
+
+  ' ────────────────────────────────────────────
+  '  ADMINISTRATION
+  ' ────────────────────────────────────────────
+  package "Administration" {
+    usecase "View All Users" as UC_ViewUsers
+    usecase "Add User" as UC_AddUser
+    usecase "Remove User" as UC_RemoveUser
+    usecase "View Activity Logs" as UC_ViewLogs
+    usecase "Save Database" as UC_SaveDB
+    usecase "Generate Academic\nPerformance Report" as UC_Report
+    usecase "View/File Complaints" as UC_Complaints
+  }
+}
+
+' ────────────────────────────────────────────
+'  GUEST
+' ────────────────────────────────────────────
+Guest --> UC_Login
+Guest --> UC_Register
+
+' ────────────────────────────────────────────
+'  STUDENT
+' ────────────────────────────────────────────
+Student --> UC_Logout
+Student --> UC_Language
+Student --> UC_ViewCourses
+Student --> UC_RegCourse
+Student --> UC_DropCourse
+Student --> UC_ViewMarks
+Student --> UC_Transcript
+Student --> UC_TeacherInfo
+Student --> UC_Rate
+Student --> UC_ViewNews
+Student --> UC_CommentNews
+Student --> UC_ViewJournals
+Student --> UC_Subscribe
+Student --> UC_ViewMessages
+Student --> UC_SendMessage
+Student --> UC_ViewNotif
+Student --> UC_CreateReq
+Student --> UC_BecomeResearcher
+Student --> UC_AllPapers
+Student --> UC_TopCited
+Student --> UC_TextCite
+Student --> UC_CreateOrg
+Student --> UC_ViewOrgs
+Student --> UC_JoinOrg
+Student --> UC_OrgMembers
+Student --> UC_OrgReqs
+
+' ────────────────────────────────────────────
+'  GRADUATE STUDENT (inherits Student, plus research)
+' ────────────────────────────────────────────
+Grad --> UC_SetSupervisor
+Grad --> UC_ViewSupervisor
+Grad --> UC_AddDiploma
+Grad --> UC_ViewDiploma
+Grad --> UC_AddPaper
+Grad --> UC_ViewPapers
+Grad --> UC_RecordCite
+Grad --> UC_HIndex
+Grad --> UC_CreateProject
+Grad --> UC_JoinProject
+Grad --> UC_ProjectReqs
+
+' ────────────────────────────────────────────
+'  TEACHER
+' ────────────────────────────────────────────
+Teacher --> UC_Logout
+Teacher --> UC_Language
+Teacher --> UC_ViewCourses
+Teacher --> UC_AssignMark
+Teacher --> UC_Complaints
+Teacher --> UC_ViewMessages
+Teacher --> UC_SendMessage
+Teacher --> UC_ViewNews
+Teacher --> UC_CommentNews
+Teacher --> UC_ViewJournals
+Teacher --> UC_Subscribe
+Teacher --> UC_ViewNotif
+Teacher --> UC_CreateReq
+Teacher --> UC_AllPapers
+Teacher --> UC_TopCited
+Teacher --> UC_TextCite
+Teacher --> UC_ViewBoard
+Teacher --> UC_PostBoard
+Teacher --> UC_BecomeResearcher
+Teacher --> UC_AddPaper
+Teacher --> UC_ViewPapers
+Teacher --> UC_RecordCite
+Teacher --> UC_HIndex
+Teacher --> UC_CreateProject
+Teacher --> UC_JoinProject
+Teacher --> UC_ProjectReqs
+
+' ────────────────────────────────────────────
+'  MANAGER
+' ────────────────────────────────────────────
+Manager --> UC_Logout
+Manager --> UC_Language
+Manager --> UC_PendingRegs
+Manager --> UC_ApproveReg
+Manager --> UC_RejectReg
+Manager --> UC_AddCourse
+Manager --> UC_ViewCourses
+Manager --> UC_AssignTeacher
+Manager --> UC_UnassignTeacher
+Manager --> UC_Report
+Manager --> UC_ViewNews
+Manager --> UC_AddNews
+Manager --> UC_RemoveNews
+Manager --> UC_CommentNews
+Manager --> UC_CreateJournal
+Manager --> UC_ViewMessages
+Manager --> UC_SendMessage
+Manager --> UC_CreateReq
+Manager --> UC_ViewNotif
+Manager --> UC_AllPapers
+Manager --> UC_TopCited
+Manager --> UC_TextCite
+Manager --> UC_ViewBoard
+Manager --> UC_PostBoard
+Manager --> UC_ApproveResearcher
+Manager --> UC_RejectResearcher
+Manager --> UC_Complaints
+
+' ────────────────────────────────────────────
+'  ADMIN
+' ────────────────────────────────────────────
+Admin --> UC_Logout
+Admin --> UC_Language
+Admin --> UC_ViewUsers
+Admin --> UC_AddUser
+Admin --> UC_RemoveUser
+Admin --> UC_ViewLogs
+Admin --> UC_ViewNews
+Admin --> UC_CommentNews
+Admin --> UC_ViewMessages
+Admin --> UC_SendMessage
+Admin --> UC_ViewNotif
+Admin --> UC_AllPapers
+Admin --> UC_TopCited
+Admin --> UC_TextCite
+Admin --> UC_ViewBoard
+Admin --> UC_PostBoard
+Admin --> UC_SaveDB
+
+' ────────────────────────────────────────────
+'  TECH SUPPORT
+' ────────────────────────────────────────────
+TechSupport --> UC_Logout
+TechSupport --> UC_Language
+TechSupport --> UC_ViewNewReqs
+TechSupport --> UC_ViewAllReqs
+TechSupport --> UC_ViewReqDetail
+TechSupport --> UC_AcceptReq
+TechSupport --> UC_RejectReq
+TechSupport --> UC_DoneReq
+TechSupport --> UC_ViewMessages
+TechSupport --> UC_SendMessage
+TechSupport --> UC_ViewNotif
+TechSupport --> UC_AllPapers
+TechSupport --> UC_ViewBoard
+TechSupport --> UC_PostBoard
+
+' ────────────────────────────────────────────
+'  <<include>> & <<extend>> relationships
+' ────────────────────────────────────────────
+
+' Approving a registration always includes viewing pending regs
+UC_ApproveReg ..> UC_PendingRegs : <<include>>
+UC_RejectReg  ..> UC_PendingRegs : <<include>>
+
+' Recording a citation always includes viewing the researcher's papers first
+UC_RecordCite ..> UC_ViewPapers : <<include>>
+
+' Setting a supervisor always internally validates the h-index
+UC_SetSupervisor ..> UC_HIndex : <<include>>
+
+' Approving/rejecting researcher requests always includes viewing the request list
+UC_ApproveResearcher ..> UC_ApproveResearcher : <<include>>
+UC_RejectResearcher  ..> UC_ApproveResearcher : <<include>>
+
+' Adding a paper optionally extends to publishing in a journal
+UC_AddPaper ..> UC_ViewJournals : <<extend>>
+
+' Adding a paper optionally extends to linking to a research project
+UC_AddPaper ..> UC_CreateProject : <<extend>>
+
+' Viewing news can optionally extend to commenting
+UC_CommentNews ..> UC_ViewNews : <<extend>>
+
+' Accepting/Rejecting a request includes viewing request details
+UC_AcceptReq ..> UC_ViewReqDetail : <<include>>
+UC_RejectReq  ..> UC_ViewReqDetail : <<include>>
+UC_DoneReq    ..> UC_ViewReqDetail : <<include>>
+
+' Managing project join requests includes viewing them
+UC_ProjectReqs ..> UC_JoinProject : <<extend>>
+
+@enduml
