@@ -3,6 +3,10 @@ package project.models.others;
 import java.io.Serializable;
 import java.util.Date;
 
+/**
+ * Records who cited a research paper and what they wrote about it.
+ * Attached to {@link ResearchPaper#getPaperCitations()} for qualitative citation tracking.
+ */
 public class Citation implements Serializable {
     private static final long serialVersionUID = 1L;
     private String citerId;

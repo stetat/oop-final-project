@@ -8,10 +8,14 @@ import project.models.enums.Role;
 import project.models.others.News;
 import project.models.others.ResearchPaper;
 import project.models.others.Researcher;
-import project.patterns.ResearchJournal;
 import project.storage.Database;
 
 
+/**
+ * Decorator (Decorator pattern) that adds researcher capabilities to any {@link User}.
+ * Stored in the database in place of the original user — all state is delegated to
+ * the wrapped user so identity and equality remain the same.
+ */
 public class ResearcherDecorator extends User implements Researcher {
     private static final long serialVersionUID = 1L;
 
@@ -58,6 +62,11 @@ public class ResearcherDecorator extends User implements Researcher {
     }
 
 
+    /**
+     * Adds a new research paper to this researcher's list and publishes a news item announcing it.
+     *
+     * @param paper the paper to add
+     */
     public void addResearchPaper(ResearchPaper paper) {
         extraPapers.add(paper);
         String name = wrappedUser.getFullName();
@@ -66,6 +75,12 @@ public class ResearcherDecorator extends User implements Researcher {
         System.out.println("[News] Research paper published: " + paper.getTitle());
     }
 
+    /**
+     * Increments the citation count of a paper owned by this researcher.
+     * Posts a news milestone item when the count crosses 5, 10, 25, 50, or 100.
+     *
+     * @param paper the paper to cite (must be in this researcher's list)
+     */
     public void addCitation(ResearchPaper paper) {
         if (!extraPapers.contains(paper)) { System.out.println("[Citation] Paper not found in this researcher's list."); return; }
         int before = paper.getCitations();
@@ -84,6 +99,11 @@ public class ResearcherDecorator extends User implements Researcher {
         }
     }
 
+    /**
+     * Calculates the h-index over all papers owned by this researcher.
+     *
+     * @return the h-index (0 if no papers)
+     */
     @Override
     public double calculateHIndex() {
         List<Integer> cits = new ArrayList<>();
@@ -95,6 +115,11 @@ public class ResearcherDecorator extends User implements Researcher {
         return h;
     }
 
+    /**
+     * Prints all papers in the order defined by {@code comparator}.
+     *
+     * @param comparator sort order (e.g. {@link project.patterns.PaperComparators#BY_CITATIONS_DESC})
+     */
     @Override
     public void printPapers(Comparator<ResearchPaper> comparator) {
         List<ResearchPaper> all = new ArrayList<>(getResearchPapersList());
@@ -105,6 +130,7 @@ public class ResearcherDecorator extends User implements Researcher {
 
     @Override public List<ResearchPaper> getResearchPapersList() { return extraPapers; }
 
+    /** Returns the original {@link User} that this decorator wraps. */
     public User getWrappedUser() { return wrappedUser; }
 
     @Override public String toString() {

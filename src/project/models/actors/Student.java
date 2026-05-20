@@ -7,6 +7,11 @@ import project.models.enums.School;
 import project.models.others.*;
 import project.storage.Database;
 
+/**
+ * Undergraduate student. Manages course enrollment (capped at 21 credits),
+ * tracks GPA from marks, and can join student organizations.
+ * Exceeding 3 course failures blocks further registration.
+ */
 public class Student extends User {
     private static final long serialVersionUID = 1L;
     private static final int MAX_CREDITS = 21;
@@ -26,6 +31,13 @@ public class Student extends User {
         super(id, password, firstName, lastName, email, Role.STUDENT);
     }
 
+    /**
+     * Attempts to enrol the student in the given course.
+     * Rejects if the 21-credit cap would be exceeded or the student is already enrolled.
+     *
+     * @param course the course to register for
+     * @return {@code true} if registration succeeded, {@code false} otherwise
+     */
     public boolean registerForCourse(Course course) {
         if (registeredCourseIds == null) registeredCourseIds = new ArrayList<>();
         if (totalCredits + course.getCredits() > MAX_CREDITS) {
@@ -43,6 +55,12 @@ public class Student extends User {
         return true;
     }
 
+    /**
+     * Drops the student from the given course and reduces their total credits.
+     *
+     * @param course the course to drop
+     * @return {@code true} if the course was found and removed, {@code false} if not enrolled
+     */
     public boolean dropCourse(Course course) {
         if (registeredCourseIds.remove(course.getCourseCode())) {
             totalCredits -= course.getCredits();
@@ -52,6 +70,10 @@ public class Student extends User {
         return false;
     }
 
+    /**
+     * Increments the failure counter and alerts if the student has exceeded the 3-failure limit.
+     * Called automatically by {@link project.services.MarkService} when a mark below 50 is assigned.
+     */
     public void incrementFailCount() {
         failCount++;
         log("Failed a course. Total fails: " + failCount);
@@ -60,8 +82,13 @@ public class Student extends User {
         }
     }
 
+    /** Returns {@code true} if the student has failed more than 3 courses and cannot register for new ones. */
     public boolean hasExceededFailLimit() { return failCount > MAX_FAIL_COUNT; }
 
+    /**
+     * Prints a formatted transcript to stdout showing marks, letter grades, GPA, credits, and fail count.
+     * Recalculates GPA and fail count from the database before printing.
+     */
     public void viewTranscript() {
         recalculateGpa();
         recalculateFailCount();
@@ -78,6 +105,7 @@ public class Student extends User {
         System.out.printf("  GPA: %.2f | Credits: %d | Fails: %d%n", gpa, totalCredits, failCount);
     }
 
+    /** Recomputes GPA from the latest mark in every registered course. Call this before displaying grades. */
     public void recalculateGpa() {
         Database db = Database.getInstance();
         double totalPoints = 0; int count = 0;
@@ -91,6 +119,7 @@ public class Student extends User {
         this.gpa = (count > 0) ? totalPoints / count : 0.0;
     }
 
+    /** Re-counts failed courses from the database. A course is failed when its total mark is below 50. */
     public void recalculateFailCount() {
         Database db = Database.getInstance();
         int fails = 0;

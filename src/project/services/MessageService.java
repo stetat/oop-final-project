@@ -7,8 +7,14 @@ import project.models.others.Message;
 import project.patterns.ResearcherDecorator;
 import project.storage.Database;
 
+/** Handles sending and retrieving direct messages between users. */
 public class MessageService {
 
+    /**
+     * Prints all messages addressed to the given user.
+     *
+     * @param userId the recipient's ID
+     */
     public void viewMessages(String userId) {
         Database db = Database.getInstance();
         List<Message> msgs = db.getMessagesForUser(userId);
@@ -22,6 +28,13 @@ public class MessageService {
         }
     }
 
+    /**
+     * Sends a message from one user to another. The receiver must exist in the database.
+     *
+     * @param senderId   the sender's ID
+     * @param receiverId the recipient's ID
+     * @param text       the message body
+     */
     public void sendMessage(String senderId, String receiverId, String text) {
         Database db = Database.getInstance();
         User recv = db.getUserById(receiverId);
@@ -31,6 +44,14 @@ public class MessageService {
         System.out.println("[Message] Sent to " + recv.getFullName() + ": " + text.trim());
     }
 
+    /**
+     * Sends a message to a recipient who must be an {@link project.models.actors.Employee}.
+     * Prints an error if the recipient is a non-employee (e.g. a student).
+     *
+     * @param senderId   the sender's ID
+     * @param receiverId the intended employee recipient's ID
+     * @param text       the message body
+     */
     public void sendMessageToEmployee(String senderId, String receiverId, String text) {
         Database db = Database.getInstance();
         User recv = db.getUserById(receiverId);

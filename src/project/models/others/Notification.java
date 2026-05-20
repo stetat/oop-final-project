@@ -4,6 +4,10 @@ import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+/**
+ * A system notification delivered to a user's inbox.
+ * Primarily used for journal subscription alerts and organization/project updates.
+ */
 public class Notification implements Serializable {
     private static final long serialVersionUID = 1L;
     private String recipientId;
@@ -20,6 +24,7 @@ public class Notification implements Serializable {
     public String getRecipientId() { return recipientId; }
     public String getMessage()     { return message; }
     public boolean isRead()        { return read; }
+    /** Marks this notification as read. */
     public void markRead()         { this.read = true; }
     public Date getCreatedAt()     { return createdAt; }
 

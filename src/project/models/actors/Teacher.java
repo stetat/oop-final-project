@@ -4,6 +4,10 @@ import project.models.enums.Role;
 import project.models.enums.School;
 import project.models.enums.TeacherTitle;
 
+/**
+ * Represents a university teacher. Can hold a research title (PROFESSOR, MASTER, PHD),
+ * which automatically grants researcher status when registered.
+ */
 public class Teacher extends Employee {
     private static final long serialVersionUID = 1L;
     private TeacherTitle title;

@@ -6,9 +6,8 @@ import java.util.Objects;
 import java.util.Vector;
 
 /**
- * Represents a university news item.
- * Research-topic news is pinned (sorted first) via Comparable.
- * Observer pattern: NewsService notifies subscribers when new news is added.
+ * A university news item. Research news sorts before general news (see {@link #compareTo}).
+ * Users can add comments to any news item.
  */
 public class News implements Comparable<News>, Serializable {
     private static final long serialVersionUID = 1L;
@@ -25,8 +24,17 @@ public class News implements Comparable<News>, Serializable {
         this.newsId = "NEWS-" + System.currentTimeMillis();
     }
 
+    /**
+     * Appends a comment to this news item. Blank or null comments are ignored.
+     *
+     * @param comment the comment text to add
+     */
     public void addComment(String comment) { if (comment != null && !comment.isBlank()) comments.add(comment); }
 
+    /**
+     * Research news comes before general news; within the same category items sort
+     * by publish date descending (newest first).
+     */
     @Override public int compareTo(News o) {
         if (this.isResearchNews && !o.isResearchNews) return -1;
         if (!this.isResearchNews && o.isResearchNews) return 1;

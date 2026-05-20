@@ -4,10 +4,7 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.Objects;
 
-import project.models.enums.RequestStatus;
-import project.models.enums.UrgencyLevel;
-
-/** Internal messaging between employees. */
+/** A direct message sent from one user to another within the university system. */
 public class Message implements Serializable {
     private static final long serialVersionUID = 1L;
     private String messageId;
@@ -22,6 +19,7 @@ public class Message implements Serializable {
         this(); this.senderId = senderId; this.receiverId = receiverId; this.content = content;
         this.messageId = "MSG-" + System.currentTimeMillis();
     }
+    /** Marks this message as read. */
     public void markAsRead() { this.isRead = true; }
 
     public String getMessageId() { return messageId; }

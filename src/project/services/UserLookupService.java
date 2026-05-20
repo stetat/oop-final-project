@@ -9,8 +9,14 @@ import project.models.others.Course;
 import project.patterns.ResearcherDecorator;
 import project.storage.Database;
 
+/** Read-only views of students, teachers, and course-to-teacher relationships. */
 public class UserLookupService {
 
+    /**
+     * Prints all students (including graduate students) sorted by the given field.
+     *
+     * @param sortBy {@code "gpa"}, {@code "year"}, or any other value for alphabetical by last name
+     */
     public void listStudents(String sortBy) {
         Database db = Database.getInstance();
         List<Student> students = new ArrayList<>(db.getAllStudentsIncludingGrad());
@@ -23,6 +29,11 @@ public class UserLookupService {
         students.forEach(s -> System.out.println("  " + s));
     }
 
+    /**
+     * Prints a student's transcript plus their organization membership.
+     *
+     * @param studentId the student's ID
+     */
     public void viewStudentDetails(String studentId) {
         Database db = Database.getInstance();
         User u = db.getUserById(studentId);
@@ -34,6 +45,11 @@ public class UserLookupService {
                 + (s.isOrganizationHead() ? " (HEAD)" : ""));
     }
 
+    /**
+     * Prints a teacher's profile including rating and, if a researcher, h-index and paper count.
+     *
+     * @param teacherId the teacher's ID
+     */
     public void viewTeacherDetails(String teacherId) {
         Database db = Database.getInstance();
         User u = db.getUserById(teacherId);
@@ -53,6 +69,12 @@ public class UserLookupService {
         }
     }
 
+    /**
+     * Returns all courses the student is currently registered in.
+     *
+     * @param student the student to look up
+     * @return list of enrolled courses (never null, may be empty)
+     */
     public List<Course> getCoursesForStudent(Student student) {
         Database db = Database.getInstance();
         List<Course> result = new ArrayList<>();
@@ -65,6 +87,11 @@ public class UserLookupService {
         return result;
     }
 
+    /**
+     * Prints the profile of every instructor assigned to a course.
+     *
+     * @param courseCode the course code to look up
+     */
     public void viewTeacherForCourse(String courseCode) {
         Database db = Database.getInstance();
         Course course = db.getCourseByCode(courseCode);

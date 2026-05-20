@@ -7,6 +7,10 @@ import project.models.others.*;
 import project.patterns.ResearcherDecorator;
 import project.storage.Database;
 
+/**
+ * A master's or PhD student. Extends Student with a research supervisor and diploma projects.
+ * When created, the system automatically wraps this object in a {@link project.patterns.ResearcherDecorator}.
+ */
 public class GraduateStudent extends Student {
     private static final long serialVersionUID = 1L;
     private static final double MIN_SUPERVISOR_H_INDEX = 3.0;
@@ -25,6 +29,12 @@ public class GraduateStudent extends Student {
         this.isPhD = isPhD;
     }
 
+    /**
+     * Assigns a research supervisor. The supervisor must be a researcher with an h-index ≥ 3.
+     *
+     * @param supervisor the proposed supervisor (must be non-null and qualified)
+     * @throws InvalidSupervisorException if the supervisor is null or has insufficient h-index
+     */
     public void setResearchSupervisor(ResearcherDecorator supervisor) throws InvalidSupervisorException {
         if (supervisor == null) throw new InvalidSupervisorException("Supervisor has no research title.");
         double hIdx = supervisor.calculateHIndex();
@@ -39,6 +49,12 @@ public class GraduateStudent extends Student {
         System.out.println("[Supervisor Assigned] " + getFullName() + " → supervisor h-index=" + hIdx);
     }
 
+    /**
+     * Adds a diploma/thesis paper. Also propagates the paper to this student's
+     * {@link project.patterns.ResearcherDecorator} in the database so it shows up in research listings.
+     *
+     * @param paper the paper to attach to this student's profile
+     */
     public void addDiplomaProject(ResearchPaper paper) {
         diplomaProjects.add(paper);
         // Also add to the ResearcherDecorator wrapping this student, if one exists in DB

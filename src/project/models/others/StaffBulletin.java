@@ -4,6 +4,10 @@ import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+/**
+ * A staff bulletin board post. Any employee can post; all staff can read.
+ * Displayed in reverse chronological order (newest first).
+ */
 public class StaffBulletin implements Serializable {
     private static final long serialVersionUID = 1L;
     private String authorId;

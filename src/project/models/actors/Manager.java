@@ -3,6 +3,10 @@ package project.models.actors;
 import project.models.enums.ManagerType;
 import project.models.enums.Role;
 
+/**
+ * University manager. Handles course registrations, teacher assignments, news, and
+ * researcher-role approvals. Type (OR or DEPARTMENTS) determines area of responsibility.
+ */
 public class Manager extends Employee {
     private static final long serialVersionUID = 1L;
     private ManagerType type;

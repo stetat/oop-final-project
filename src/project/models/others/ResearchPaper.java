@@ -8,8 +8,8 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Represents an academic research paper with full citation support.
- * Implements Comparable for natural ordering by citations (descending).
+ * An academic research paper with metadata and citation tracking.
+ * Natural ordering is by citation count descending — most-cited papers sort first.
  */
 public class ResearchPaper implements Comparable<ResearchPaper>, Serializable {
     private static final long serialVersionUID = 1L;
@@ -31,6 +31,12 @@ public class ResearchPaper implements Comparable<ResearchPaper>, Serializable {
         this.publishDate = publishDate; this.pages = pages;
     }
 
+    /**
+     * Formats this paper's bibliographic information.
+     *
+     * @param format {@code "Bibtex"} for BibTeX format, anything else for plain-text APA-style
+     * @return the formatted citation string
+     */
     public String getCitation(String format) {
         String year = publishDate != null ? new SimpleDateFormat("yyyy").format(publishDate) : "n.d.";
         if ("Bibtex".equalsIgnoreCase(format)) {
@@ -70,6 +76,11 @@ public class ResearchPaper implements Comparable<ResearchPaper>, Serializable {
         if (paperCitations == null) paperCitations = new ArrayList<>();
         return paperCitations;
     }
+    /**
+     * Adds a text-based citation record (who cited this paper and what they wrote).
+     *
+     * @param c the citation to attach
+     */
     public void addPaperCitation(Citation c) {
         if (paperCitations == null) paperCitations = new ArrayList<>();
         paperCitations.add(c);

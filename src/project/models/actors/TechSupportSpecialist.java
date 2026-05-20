@@ -9,8 +9,8 @@ import project.models.others.Request;
 import project.storage.Database;
 
 /**
- * Tech support specialist. Manages and resolves employee requests.
- * Request lifecycle: VIEWED (on open) → ACCEPTED / REJECTED → DONE.
+ * Tech-support specialist responsible for handling employee requests.
+ * Typical lifecycle for a request: VIEWED (on open) → ACCEPTED or REJECTED → DONE.
  */
 public class TechSupportSpecialist extends Employee {
     private static final long serialVersionUID = 1L;
@@ -20,6 +20,11 @@ public class TechSupportSpecialist extends Employee {
         super(id, password, firstName, lastName, email, salary, Role.TECH_SUPPORT);
     }
 
+    /**
+     * Returns all requests currently in the VIEWED state (i.e. not yet processed).
+     *
+     * @return list of pending requests; never null
+     */
     public List<Request> getNewRequests() {
         List<Request> all = Database.getInstance().getAllRequests();
         List<Request> pending = all.stream().filter(r -> r.getStatus() == RequestStatus.VIEWED).collect(Collectors.toList());
@@ -27,16 +32,36 @@ public class TechSupportSpecialist extends Employee {
         return pending;
     }
 
+    /**
+     * Sets the request's status to ACCEPTED.
+     *
+     * @param requestId the ID of the request to accept
+     */
     public void acceptRequest(String requestId) {
         updateRequestStatus(requestId, RequestStatus.ACCEPTED);
     }
+    /**
+     * Sets the request's status to REJECTED.
+     *
+     * @param requestId the ID of the request to reject
+     */
     public void rejectRequest(String requestId) {
         updateRequestStatus(requestId, RequestStatus.REJECTED);
     }
+    /**
+     * Sets the request's status to DONE, indicating the issue has been resolved.
+     *
+     * @param requestId the ID of the completed request
+     */
     public void markAsDone(String requestId) {
         updateRequestStatus(requestId, RequestStatus.DONE);
     }
 
+    /**
+     * Prints the full details of a request and marks it as VIEWED.
+     *
+     * @param requestId the ID of the request to inspect
+     */
     public void viewRequest(String requestId) {
         Request r = Database.getInstance().getRequestById(requestId);
         if (r == null) { System.out.println("[TechSupport] Request not found: " + requestId); return; }
@@ -51,6 +76,12 @@ public class TechSupportSpecialist extends Employee {
         System.out.println("  Requester:   " + r.getRequesterId());
     }
 
+    /**
+     * Internal helper that sets a request's status and logs the change.
+     *
+     * @param requestId the target request
+     * @param newStatus the status to apply
+     */
     private void updateRequestStatus(String requestId, RequestStatus newStatus) {
         Request r = Database.getInstance().getRequestById(requestId);
         if (r != null) {

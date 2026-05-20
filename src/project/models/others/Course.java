@@ -7,8 +7,8 @@ import project.models.enums.CourseType;
 import project.models.enums.School;
 
 /**
- * Represents a university course. Contains lessons, marks per student, and instructor list.
- * Supports multiple instructors (e.g., separate lecture and practice teachers).
+ * A university course with its schedule, marks per student, and assigned instructors.
+ * Multiple teachers can be attached (e.g. one for lectures, another for practice sessions).
  */
 public class Course implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -35,15 +35,30 @@ public class Course implements Serializable {
         this(courseCode, courseName, credits, type, targetYear); this.school = school;
     }
 
+    /** Adds a scheduled lesson to this course. Null values are ignored. */
     public void addLesson(Lesson lesson) { if (lesson != null) lessons.add(lesson); }
 
+    /**
+     * Records a mark for a student. Multiple marks can exist per student (history is kept).
+     *
+     * @param studentId the student's ID
+     * @param mark      the mark to record
+     */
     public void assignMark(String studentId, Mark mark) {
         marks.computeIfAbsent(studentId, k -> new Vector<>()).add(mark);
     }
 
+    /** Adds a teacher to this course's instructor list. Duplicates are silently ignored. */
     public void addInstructorId(String teacherId) { if (!instructorIds.contains(teacherId)) instructorIds.add(teacherId); }
+
+    /** Removes a teacher from this course's instructor list. */
     public void removeInstructorId(String teacherId) { instructorIds.remove(teacherId); }
 
+    /**
+     * Returns the most recently assigned mark for a student, or {@code null} if none exists.
+     *
+     * @param studentId the student's ID
+     */
     public Mark getLatestMark(String studentId) {
         Vector<Mark> m = marks.get(studentId);
         return (m != null && !m.isEmpty()) ? m.lastElement() : null;

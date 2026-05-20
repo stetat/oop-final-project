@@ -16,8 +16,14 @@ import project.services.*;
 import project.storage.Database;
 
 
+/** Entry point for the KBTU University System. Seeds the database and runs all demos before launching the interactive CLI. */
 public class Main {
 
+    /**
+     * Seeds the database, runs ten feature demos, then starts the interactive menu.
+     *
+     * @param args command-line arguments (not used)
+     */
     public static void main(String[] args) {
         System.out.println("╔════════════════════════════╗");
         System.out.println("║   KBTU University System   ║");
@@ -65,6 +71,12 @@ public class Main {
     }
 
 
+    /**
+     * Populates the database with a fixed set of users and courses if it hasn't been seeded already.
+     * Skips silently when {@code ADMIN01} is already present (i.e. data was loaded from disk).
+     *
+     * @param db the singleton database instance
+     */
     static void seedDatabase(Database db) {
         if (db.getUserById("ADMIN01") != null) {
             System.out.println("[Seed] Database already populated — skipping seed.");
@@ -129,6 +141,7 @@ public class Main {
     }
 
 
+    /** Demonstrates successful login, failed login with wrong password, login with unknown ID, and logout. */
     static void demoAuthentication() {
         User u = AuthService.login("STU01", "stu123");
         System.out.println("Logged in as: " + u);
@@ -144,6 +157,12 @@ public class Main {
         AuthService.logout();
     }
 
+    /**
+     * Demonstrates manager-approved course registration, credit-limit enforcement,
+     * and over-credit rejection.
+     *
+     * @param db the database instance
+     */
     static void demoCourseRegistration(Database db) {
         Student s1 = (Student) db.getUserById("STU01");
         Manager mgr = (Manager) db.getUserById("MGR01");
@@ -171,6 +190,12 @@ public class Main {
         managerService.approveRegistration(mgr, s2, ml);
     }
 
+    /**
+     * Assigns attestation and final-exam marks for several students and courses,
+     * then recalculates GPAs and prints transcripts.
+     *
+     * @param db the database instance
+     */
     static void demoMarks(Database db) {
         User profUser = db.getUserById("TCH01");
         Teacher prof = profUser instanceof ResearcherDecorator
@@ -196,6 +221,12 @@ public class Main {
         s2.viewTranscript();
     }
 
+    /**
+     * Demonstrates h-index calculation, supervisor assignment (including invalid-supervisor exceptions),
+     * research projects, and top-cited-researcher announcements.
+     *
+     * @param db the database instance
+     */
     static void demoResearch(Database db) {
         ResearcherDecorator profRd = (ResearcherDecorator) db.getUserById("TCH01");
         ResearcherDecorator phdRd  = (ResearcherDecorator) db.getUserById("PHD01");
@@ -249,6 +280,13 @@ public class Main {
         rs.announceTopCitedResearcher();
     }
 
+    /**
+     * Demonstrates the Observer (publish–subscribe) pattern via a research journal:
+     * three users subscribe, a paper is published (triggering notifications), one unsubscribes,
+     * then a second paper is published.
+     *
+     * @param db the database instance
+     */
     static void demoObserver(Database db) {
         ResearchJournal journal = new ResearchJournal("KBTU Journal of Computing");
         db.addJournal(journal);
@@ -270,6 +308,12 @@ public class Main {
         journal.publishPaper(newPaper2); 
     }
 
+    /**
+     * Files two teacher complaints, handles tech-support requests (accept/reject),
+     * and sends a message from a teacher to the manager.
+     *
+     * @param db the database instance
+     */
     static void demoComplaintsAndTechSupport(Database db) {
         ResearcherDecorator profRd = (ResearcherDecorator) db.getUserById("TCH01");
         Teacher prof = (Teacher) profRd.getWrappedUser();
@@ -301,6 +345,12 @@ public class Main {
         db.getMessagesForUser(mgr.getId()).forEach(m -> System.out.println("  " + m));
     }
 
+    /**
+     * Generates an academic performance report, adds news items, lists students/teachers,
+     * and demonstrates teacher rating.
+     *
+     * @param db the database instance
+     */
     static void demoManagerActions(Database db) {
         Manager mgr = (Manager) db.getUserById("MGR01");
         ManagerService managerService = new ManagerService();
@@ -326,6 +376,12 @@ public class Main {
         System.out.println("Average rating for " + prof.getFullName() + ": " + db.getAverageRating(prof.getId()));
     }
 
+    /**
+     * Saves the database to disk, reloads it, then verifies that a student's data
+     * (including transcript) survived the round-trip.
+     *
+     * @param db the database instance
+     */
     static void demoSerialization(Database db) {
         System.out.println("Saving database to disk...");
         db.saveToDisk();
@@ -340,6 +396,7 @@ public class Main {
         }
     }
 
+    /** Exercises all five design patterns: Singleton, Factory, Strategy (comparators), Decorator, and Observer. */
     static void demoPatterns() {
         System.out.println("--- Pattern 1: Singleton ---");
         Database db1 = Database.getInstance();
@@ -369,6 +426,12 @@ public class Main {
         System.out.println("See Demo 5 above — users notified via onNewPaperPublished()");
     }
 
+    /**
+     * Prints the professor's papers sorted by citations, date, and page count,
+     * then shows both Plain Text and BibTeX citation formats.
+     *
+     * @param db the database instance
+     */
     static void demoComparators(Database db) {
         User profUser = db.getUserById("TCH01");
         if (!(profUser instanceof ResearcherDecorator)) return;

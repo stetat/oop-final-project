@@ -2,14 +2,21 @@ package project.services;
 
 import java.util.*;
 import project.models.actors.*;
-import project.models.others.*;
 import project.patterns.ResearcherDecorator;
 import project.storage.Database;
 import project.models.others.Course;
 import project.models.others.News;
 
+/** Manager-level operations: course/teacher management, reports, news, and student views. */
 public class ManagerService {
 
+    /**
+     * Directly enrolls a student in a course and logs the approval.
+     *
+     * @param manager the approving manager
+     * @param student the student to enroll
+     * @param course  the course to enroll them in
+     */
     public void approveRegistration(Manager manager, Student student, Course course) {
         boolean ok = student.registerForCourse(course);
         manager.log("Approved registration: " + student.getId() + " → " + course.getCourseCode());
@@ -17,11 +24,25 @@ public class ManagerService {
             (ok ? "APPROVED" : "FAILED") + ": " + student.getFullName() + " → " + course.getCourseName());
     }
 
+    /**
+     * Logs a rejected registration (no enrollment change is made).
+     *
+     * @param manager the rejecting manager
+     * @param student the student whose request was rejected
+     * @param course  the course they were rejected from
+     */
     public void rejectRegistration(Manager manager, Student student, Course course) {
         manager.log("Rejected registration: " + student.getId() + " → " + course.getCourseCode());
         System.out.println("[Manager] Rejected: " + student.getFullName() + " → " + course.getCourseName());
     }
 
+    /**
+     * Assigns a teacher to instruct a course and saves the change.
+     *
+     * @param manager the manager performing the assignment
+     * @param teacher the teacher to assign
+     * @param course  the course to assign them to
+     */
     public void assignCourse(Manager manager, Teacher teacher, Course course) {
         course.addInstructorId(teacher.getId());
         Database.getInstance().saveCourse(course);
@@ -29,12 +50,25 @@ public class ManagerService {
         System.out.println("[Manager] Assigned " + teacher.getFullName() + " → " + course.getCourseName());
     }
 
+    /**
+     * Removes a teacher from a course's instructor list.
+     *
+     * @param manager the manager performing the removal
+     * @param teacher the teacher to unassign
+     * @param course  the course to remove them from
+     */
     public void unassignCourse(Manager manager, Teacher teacher, Course course) {
         course.removeInstructorId(teacher.getId());
         Database.getInstance().saveCourse(course);
         manager.log("Unassigned " + teacher.getId() + " from " + course.getCourseCode());
     }
 
+    /**
+     * Publishes a news item and persists it.
+     *
+     * @param manager the manager posting the news
+     * @param news    the news item to add
+     */
     public void addNews(Manager manager, News news) {
         Database.getInstance().addNews(news);
         manager.log("Added news: " + news.getTitle());
@@ -42,12 +76,19 @@ public class ManagerService {
         Database.getInstance().saveToDisk();
     }
 
+    /**
+     * Removes a news item by its ID.
+     *
+     * @param manager the manager requesting the removal
+     * @param newsId  the ID of the news item to delete
+     */
     public void removeNews(Manager manager, String newsId) {
         Database.getInstance().removeNews(newsId);
         manager.log("Removed news id=" + newsId);
         Database.getInstance().saveToDisk();
     }
 
+    /** Prints an academic performance report for all undergraduates, sorted by GPA descending. */
     public void createStatisticalReport() {
         Database db = Database.getInstance();
         System.out.println("=== ACADEMIC PERFORMANCE REPORT ===");
@@ -63,6 +104,11 @@ public class ManagerService {
         System.out.printf("  Average GPA: %.2f%n", totalGpa / students.size());
     }
 
+    /**
+     * Lists all undergraduates sorted by the given field.
+     *
+     * @param sortBy {@code "gpa"}, {@code "year"}, or any other value for alphabetical by last name
+     */
     public void viewStudents(String sortBy) {
         List<Student> students = new ArrayList<>(Database.getInstance().getAllStudents());
         switch (sortBy.toLowerCase()) {
@@ -74,11 +120,17 @@ public class ManagerService {
         students.forEach(s -> System.out.println("  " + s));
     }
 
+    /** Prints all teachers in the database. */
     public void viewTeachers() {
         System.out.println("=== TEACHERS ===");
         Database.getInstance().getAllTeachers().forEach(t -> System.out.println("  " + t));
     }
 
+    /**
+     * Prints detailed info for a teacher including rating and, if a researcher, h-index and paper count.
+     *
+     * @param teacherId the teacher's ID
+     */
     public void viewTeacherDetails(String teacherId) {
         Database db = Database.getInstance();
         User u = db.getUserById(teacherId);
@@ -98,6 +150,13 @@ public class ManagerService {
         }
     }
 
+    /**
+     * Adds a comment to a news item, prefixing it with the commenter's name.
+     *
+     * @param newsId     the ID of the news item to comment on
+     * @param viewerName the display name of the commenter
+     * @param comment    the comment text
+     */
     public void addCommentToNews(String newsId, String viewerName, String comment) {
         Database db = Database.getInstance();
         db.getAllNews().stream()
@@ -110,6 +169,14 @@ public class ManagerService {
             });
     }
 
+    /**
+     * Convenience method that looks up teacher and course by ID/code before delegating to
+     * {@link #assignCourse}.
+     *
+     * @param manager   the approving manager
+     * @param teacherId the teacher's ID
+     * @param code      the course code
+     */
     public void assignCourseById(Manager manager, String teacherId, String code) {
         Database db = Database.getInstance();
         User u = db.getUserById(teacherId);
@@ -121,6 +188,14 @@ public class ManagerService {
         db.saveToDisk();
     }
 
+    /**
+     * Convenience method that looks up teacher and course by ID/code before delegating to
+     * {@link #unassignCourse}.
+     *
+     * @param manager   the manager performing the removal
+     * @param teacherId the teacher's ID
+     * @param code      the course code
+     */
     public void unassignCourseById(Manager manager, String teacherId, String code) {
         Database db = Database.getInstance();
         User u = db.getUserById(teacherId);

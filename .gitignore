@@ -35,3 +35,8 @@ bin/
 
 # Игнорируем файл базы данных (так как это бинарный файл, его лучше не пушить)
 kbtu_database.dat
+
+.git
+.settings
+.classpath
+.project

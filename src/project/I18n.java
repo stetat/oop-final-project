@@ -562,6 +562,13 @@ public class I18n {
                 "done <id>        - отметить как выполнено");
     }
 
+    /**
+     * Returns the localized string for {@code key} in the active language,
+     * falling back to English if the key is missing.
+     *
+     * @param key the message key (e.g. {@code "auth.welcome"})
+     * @return the translated string, or {@code "[key]"} if not found anywhere
+     */
     public static String get(String key) {
         Map<String, String> active = T.getOrDefault(lang, T.get(LanguageType.EN));
         String val = active.get(key);
@@ -569,9 +576,17 @@ public class I18n {
         return val != null ? val : "[" + key + "]";
     }
 
+    /**
+     * Changes the active UI language for all subsequent {@link #get} calls.
+     *
+     * @param l the language to switch to
+     */
     public static void setLang(LanguageType l) { lang = l; }
+
+    /** Returns the currently active UI language. */
     public static LanguageType getLang()        { return lang; }
 
+    /** Inserts one translated key-value triple into the EN, KZ, and RU maps. */
     private static void d(Map<String,String> en, Map<String,String> kz, Map<String,String> ru,
                            String key, String enVal, String kzVal, String ruVal) {
         en.put(key, enVal);

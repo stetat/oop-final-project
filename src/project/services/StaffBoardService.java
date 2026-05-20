@@ -4,8 +4,10 @@ import java.util.List;
 import project.models.others.StaffBulletin;
 import project.storage.Database;
 
+/** Manages the employee-only staff bulletin board. */
 public class StaffBoardService {
 
+    /** Prints all bulletin board posts in reverse-chronological order. */
     public void viewStaffBoard() {
         Database db = Database.getInstance();
         List<StaffBulletin> board = db.getAllStaffBulletins();
@@ -18,6 +20,14 @@ public class StaffBoardService {
         }
     }
 
+    /**
+     * Creates and saves a new bulletin board post.
+     *
+     * @param authorId   the poster's user ID
+     * @param authorName the poster's display name
+     * @param title      headline of the post
+     * @param body       full text of the post
+     */
     public void postToStaffBoard(String authorId, String authorName, String title, String body) {
         Database db = Database.getInstance();
         db.addStaffBulletin(new StaffBulletin(authorId, authorName, title, body));

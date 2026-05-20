@@ -5,8 +5,15 @@ import project.models.actors.User;
 import project.patterns.ResearchJournal;
 import project.storage.Database;
 
+/** Manages research journals: creation, listing, and subscription. */
 public class JournalService {
 
+    /**
+     * Creates a new research journal with the given name.
+     * Does nothing if a journal with that name already exists.
+     *
+     * @param name the journal name (must be non-blank)
+     */
     public void createJournal(String name) {
         Database db = Database.getInstance();
         if (name == null || name.isBlank()) { System.out.println("[Journal] Name cannot be empty."); return; }
@@ -16,6 +23,7 @@ public class JournalService {
         System.out.println("[Journal] Created: " + name);
     }
 
+    /** Prints all journals in the system along with their paper counts. */
     public void listJournals() {
         Database db = Database.getInstance();
         List<ResearchJournal> journals = db.getAllJournals();
@@ -24,6 +32,13 @@ public class JournalService {
         journals.forEach(j -> System.out.println("  " + j.getName() + "  (" + j.getPapers().size() + " papers)"));
     }
 
+    /**
+     * Subscribes a user to a journal so they receive notifications when new papers are published.
+     * Prints the available journals and an error if the name is not found.
+     *
+     * @param user        the user who wants to subscribe
+     * @param journalName the journal to subscribe to
+     */
     public void subscribeJournal(User user, String journalName) {
         Database db = Database.getInstance();
         ResearchJournal journal = db.getJournalByName(journalName.trim());

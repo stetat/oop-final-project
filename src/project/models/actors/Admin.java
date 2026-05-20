@@ -2,6 +2,7 @@ package project.models.actors;
 
 import project.models.enums.Role;
 
+/** System administrator — has full access to user management and activity logs. */
 public class Admin extends Employee {
     private static final long serialVersionUID = 1L;
 

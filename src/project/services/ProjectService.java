@@ -8,8 +8,10 @@ import project.models.others.*;
 import project.patterns.ResearcherDecorator;
 import project.storage.Database;
 
+/** Manages research projects: creation, discovery, and join-request handling. */
 public class ProjectService {
 
+    /** Prints all research projects with their participant lists. */
     public void listProjects() {
         Database db = Database.getInstance();
         List<ResearchProject> projects = db.getAllProjects();
@@ -28,6 +30,13 @@ public class ProjectService {
         }
     }
 
+    /**
+     * Creates a research project owned by the given researcher.
+     * The creator is automatically added as the first participant.
+     *
+     * @param user  the user creating the project (must have researcher status)
+     * @param topic a non-blank description of the research topic
+     */
     public void createProject(User user, String topic) {
         Database db = Database.getInstance();
         ResearcherDecorator rd = getResearcherOf(user);
@@ -41,6 +50,13 @@ public class ProjectService {
         System.out.println("[Project] Created: " + proj);
     }
 
+    /**
+     * Submits a join request for a researcher to an existing project.
+     * Skips if they are already a member or have a pending request.
+     *
+     * @param user      the user requesting to join (must have researcher status)
+     * @param projectId the ID of the project to join
+     */
     public void joinProject(User user, String projectId) {
         Database db = Database.getInstance();
         ResearcherDecorator rd = getResearcherOf(user);
@@ -64,6 +80,11 @@ public class ProjectService {
         System.out.println("[Project] Join request #" + req.getRequestId() + " sent for '" + proj.getTopic() + "'. Awaiting owner approval.");
     }
 
+    /**
+     * Lists all pending join requests for projects owned by the given user.
+     *
+     * @param ownerId the project owner's user ID
+     */
     public void listProjectJoinRequests(String ownerId) {
         Database db = Database.getInstance();
         List<ProjectJoinRequest> reqs = db.getProjectJoinRequestsForOwner(ownerId);
@@ -76,6 +97,13 @@ public class ProjectService {
         }
     }
 
+    /**
+     * Approves or rejects a project join request. Only the project owner may act on it.
+     *
+     * @param ownerId the project owner's user ID
+     * @param reqId   the request ID to process
+     * @param accept  {@code true} to approve and add the requester, {@code false} to reject
+     */
     public void handleProjectJoinRequest(String ownerId, String reqId, boolean accept) {
         Database db = Database.getInstance();
         Request r = db.getRequestById(reqId);
@@ -106,6 +134,7 @@ public class ProjectService {
         }
     }
 
+    /** Returns the {@link ResearcherDecorator} for a user, checking the DB if needed. */
     private ResearcherDecorator getResearcherOf(User u) {
         if (u == null) return null;
         if (u instanceof ResearcherDecorator) return (ResearcherDecorator) u;

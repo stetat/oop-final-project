@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html","k":"18"},{"l":"project"},{"l":"project.models.actors"},{"l":"project.models.enums"},{"l":"project.models.errors"},{"l":"project.models.others"},{"l":"project.patterns"},{"l":"project.services"},{"l":"project.storage"}];updateSearchResults();

@@ -11,8 +11,14 @@ import project.models.others.*;
 import project.patterns.ResearcherDecorator;
 import project.storage.Database;
 
+/** Handles course browsing, student registration/dropping, and manager approval workflows. */
 public class CourseService {
 
+    /**
+     * Prints all courses. Cross-school courses are labelled "FREE ELECTIVE" for the given student.
+     *
+     * @param viewer the student viewing the list (used to determine cross-school courses); may be null
+     */
     public void listAllCourses(Student viewer) {
         Database db = Database.getInstance();
         System.out.println("=== AVAILABLE COURSES ===");
@@ -42,6 +48,11 @@ public class CourseService {
         listAllCourses(null);
     }
 
+    /**
+     * Lists all courses, marking with {@code *} the ones the given teacher instructs.
+     *
+     * @param teacher the teacher whose courses to highlight
+     */
     public void listCoursesForTeacher(Teacher teacher) {
         Database db = Database.getInstance();
         System.out.println("=== MY COURSES ===");
@@ -52,6 +63,13 @@ public class CourseService {
         }
     }
 
+    /**
+     * Submits a course registration request for a student. Validates fail limit,
+     * duplicate enrollment, credit cap, and existing pending requests before creating the request.
+     *
+     * @param student the student requesting enrollment
+     * @param code    the course code (e.g. "CS101")
+     */
     public void studentRegister(Student student, String code) {
         Database db = Database.getInstance();
         if (student.hasExceededFailLimit()) {
@@ -81,6 +99,12 @@ public class CourseService {
                 + course.getCourseName() + ". Awaiting manager approval.");
     }
 
+    /**
+     * Drops a student from a course and persists the change.
+     *
+     * @param student the student dropping the course
+     * @param code    the course code to drop
+     */
     public void studentDrop(Student student, String code) {
         Database db = Database.getInstance();
         Course course = db.getCourseByCode(code);
@@ -90,6 +114,11 @@ public class CourseService {
         if (dropped) db.saveToDisk();
     }
 
+    /**
+     * Prints the latest mark for every course the student is registered in, plus their GPA.
+     *
+     * @param student the student whose marks to display
+     */
     public void studentViewMarks(Student student) {
         Database db = Database.getInstance();
         student.recalculateGpa();
@@ -110,6 +139,7 @@ public class CourseService {
         System.out.printf("  GPA: %.2f | Credits: %d%n", student.getGpa(), student.getTotalCredits());
     }
 
+    /** Prints all course registration requests that are still in the VIEWED (pending) state. */
     public void listPendingRegistrations() {
         Database db = Database.getInstance();
         List<Request> pending = db.getAllRequests().stream()
@@ -126,6 +156,12 @@ public class CourseService {
         }
     }
 
+    /**
+     * Approves a pending course registration request and enrolls the student.
+     *
+     * @param manager the manager approving the request
+     * @param reqId   the request ID to approve
+     */
     public void managerApproveReg(Manager manager, String reqId) {
         Database db = Database.getInstance();
         Request r = db.getRequestById(reqId);
@@ -151,6 +187,12 @@ public class CourseService {
         db.saveToDisk();
     }
 
+    /**
+     * Rejects a pending course registration request.
+     *
+     * @param manager the manager rejecting the request
+     * @param reqId   the request ID to reject
+     */
     public void managerRejectReg(Manager manager, String reqId) {
         Database db = Database.getInstance();
         Request r = db.getRequestById(reqId);
@@ -172,6 +214,16 @@ public class CourseService {
         db.saveToDisk();
     }
 
+    /**
+     * Creates and persists a new course. Rejects if the course code already exists.
+     *
+     * @param code       unique course code (e.g. "CS201")
+     * @param name       full course name
+     * @param credits    credit hours
+     * @param courseType MAJOR, MINOR, or FREE_ELECTIVE
+     * @param targetYear the year of study this course targets
+     * @param school     the faculty this course belongs to
+     */
     public void addCourse(String code, String name, int credits, CourseType courseType, int targetYear, School school) {
         Database db = Database.getInstance();
         if (db.getCourseByCode(code) != null) { System.out.println("[Course] Course code already exists: " + code); return; }

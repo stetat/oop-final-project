@@ -2,6 +2,10 @@ package project.models.others;
 
 import project.models.enums.UrgencyLevel;
 
+/**
+ * A student's request to enrol in a specific course.
+ * Pending requests are approved or rejected by a manager via {@link project.services.CourseService}.
+ */
 public class CourseRegistrationRequest extends Request {
     private static final long serialVersionUID = 1L;
     private String courseCode;

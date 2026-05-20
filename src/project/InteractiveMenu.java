@@ -2,7 +2,6 @@ package project;
 
 import java.util.*;
 import java.util.Comparator;
-import java.util.stream.Collectors;
 import project.models.actors.*;
 import project.models.enums.CourseType;
 import project.models.enums.LanguageType;
@@ -50,6 +49,7 @@ public class InteractiveMenu {
 
     // ─── Entry Point ───────────────────────────────────────────────────────────
 
+    /** Starts the CLI event loop: shows the auth prompt when no one is logged in, otherwise shows the role menu. */
     public static void run() {
         printBanner();
         while (true) {
@@ -60,6 +60,7 @@ public class InteractiveMenu {
 
     // ─── Auth ──────────────────────────────────────────────────────────────────
 
+    /** Reloads the DB and prompts the user to {@code login}, {@code register}, or {@code quit}. */
     private static void handleAuthPrompt() {
         db.reloadFromDisk();
         System.out.println("\n" + I18n.get("auth.prompt"));
@@ -77,6 +78,7 @@ public class InteractiveMenu {
         }
     }
 
+    /** Collects ID and password, calls {@link AuthService#login}, and sets the UI language on success. */
     private static void doLogin() {
         System.out.print(I18n.get("auth.id"));       String id   = readLine();
         System.out.print(I18n.get("auth.password")); String pass = readLine();
@@ -89,6 +91,7 @@ public class InteractiveMenu {
         }
     }
 
+    /** Collects registration details for a new user, creates the appropriate object, and saves it. */
     private static void doRegister() {
         System.out.println(I18n.get("auth.register_hdr"));
         System.out.print(I18n.get("auth.id"));        String id    = readLine();
@@ -142,6 +145,10 @@ public class InteractiveMenu {
 
     // ─── Role Router ───────────────────────────────────────────────────────────
 
+    /**
+     * Reloads the DB, refreshes the live user object, and dispatches to the correct role-specific menu.
+     * Logs out if the user no longer exists in the DB.
+     */
     private static void handleRoleMenu() {
         db.reloadFromDisk();
 
@@ -167,24 +174,30 @@ public class InteractiveMenu {
         else                                            AuthService.logout();
     }
 
+    /** Returns {@code true} if the teacher title automatically grants researcher status (PROFESSOR, MASTER, or PHD). */
     private static boolean isResearchTitle(TeacherTitle t) {
         return t == TeacherTitle.PROFESSOR || t == TeacherTitle.MASTER || t == TeacherTitle.PHD;
     }
 
+    /** Unwraps a {@link ResearcherDecorator} to its inner user, or returns {@code u} unchanged. */
     private static User baseUser(User u) {
         return (u instanceof ResearcherDecorator) ? ((ResearcherDecorator) u).getWrappedUser() : u;
     }
 
-    private static Teacher asTeacher(User u) {
+    /** Returns the unwrapped user cast to {@link Teacher}, or {@code null} if not applicable. */
+    @SuppressWarnings("unused")
+	private static Teacher asTeacher(User u) {
         User base = baseUser(u);
         return (base instanceof Teacher) ? (Teacher) base : null;
     }
 
+    /** Returns the unwrapped user cast to {@link Student}, or {@code null} if not applicable. */
     private static Student asStudent(User u) {
         User base = baseUser(u);
         return (base instanceof Student) ? (Student) base : null;
     }
 
+    /** Resolves the {@link ResearcherDecorator} for a user, falling back to the live DB entry if needed. */
     private static ResearcherDecorator getResearcherOf(User u) {
         if (u == null) return null;
         if (u instanceof ResearcherDecorator) return (ResearcherDecorator) u;
@@ -195,6 +208,13 @@ public class InteractiveMenu {
 
     // ─── Student Menu ──────────────────────────────────────────────────────────
 
+    /**
+     * Renders the student command menu and handles one command.
+     * Researcher-specific commands (papers, projects, h-index) appear only when {@code rd != null}.
+     *
+     * @param student the logged-in student
+     * @param rd      the student's researcher decorator, or {@code null} if not a researcher
+     */
     private static void showStudentMenu(Student student, ResearcherDecorator rd) {
         List<String> h = new ArrayList<>(Arrays.asList(
             I18n.get("help.courses"),  I18n.get("help.register"), I18n.get("help.drop"),
@@ -296,6 +316,13 @@ public class InteractiveMenu {
 
     // ─── Graduate Student Menu ─────────────────────────────────────────────────
 
+    /**
+     * Renders the graduate-student command menu and handles one command.
+     * Includes supervisor, diploma project, and research-project commands in addition to the base student set.
+     *
+     * @param grad the logged-in graduate student
+     * @param rd   the student's researcher decorator (graduate students always have one)
+     */
     private static void showGradStudentMenu(GraduateStudent grad, ResearcherDecorator rd) {
         printHelp(new String[]{
             I18n.get("help.courses"),    I18n.get("help.register"),   I18n.get("help.drop"),
@@ -404,6 +431,13 @@ public class InteractiveMenu {
 
     // ─── Teacher Menu ──────────────────────────────────────────────────────────
 
+    /**
+     * Renders the teacher command menu and handles one command.
+     * Researcher commands appear when the teacher has been promoted to researcher status.
+     *
+     * @param teacher the logged-in teacher
+     * @param rd      the teacher's researcher decorator, or {@code null} if not a researcher
+     */
     private static void showTeacherMenu(Teacher teacher, ResearcherDecorator rd) {
         List<String> h = new ArrayList<>(Arrays.asList(
             I18n.get("help.courses"),   I18n.get("help.students"),  I18n.get("help.student"),
@@ -483,6 +517,12 @@ public class InteractiveMenu {
 
     // ─── Manager Menu ──────────────────────────────────────────────────────────
 
+    /**
+     * Renders the manager command menu and handles one command.
+     * Includes course management, news, researcher-request approval, and reporting.
+     *
+     * @param manager the logged-in manager
+     */
     private static void showManagerMenu(Manager manager) {
         printHelp(new String[]{
             I18n.get("help.students"),    I18n.get("help.teachers"),    I18n.get("help.assign"),      I18n.get("help.unassign"),
@@ -562,6 +602,12 @@ public class InteractiveMenu {
 
     // ─── Admin Menu ────────────────────────────────────────────────────────────
 
+    /**
+     * Renders the admin command menu and handles one command.
+     * Includes full user management, activity log viewing, and manual DB save.
+     *
+     * @param admin the logged-in admin
+     */
     private static void showAdminMenu(Admin admin) {
         printHelp(new String[]{
             I18n.get("help.users"),     I18n.get("help.adduser"),   I18n.get("help.removeuser"),
@@ -612,6 +658,12 @@ public class InteractiveMenu {
 
     // ─── Tech Support Menu ─────────────────────────────────────────────────────
 
+    /**
+     * Renders the tech-support command menu and handles one command.
+     * Covers request viewing, acceptance/rejection, and marking as done.
+     *
+     * @param tech the logged-in tech-support specialist
+     */
     private static void showTechSupportMenu(TechSupportSpecialist tech) {
         printHelp(new String[]{
             I18n.get("help.requests"),   I18n.get("help.allrequests"), I18n.get("help.view_req"),
@@ -673,6 +725,7 @@ public class InteractiveMenu {
 
     // ─── Interactive Helpers (collect input, call service) ─────────────────────
 
+    /** Lets the graduate student pick a research supervisor from the list of available teachers. */
     private static void setSupervisorInteractive(GraduateStudent grad) {
         List<Teacher> teachers = db.getAllTeachers();
         if (teachers.isEmpty()) { System.out.println("[Supervisor] No teachers found."); return; }
@@ -694,6 +747,7 @@ public class InteractiveMenu {
         researchService.setSupervisor(grad, dec);
     }
 
+    /** Collects paper metadata from the user and attaches it as a diploma project to the graduate student. */
     private static void addDiplomaProjectInteractive(GraduateStudent grad) {
         System.out.println(I18n.get("hdr.add_diploma"));
         System.out.print(I18n.get("lbl.title"));     String title   = readLine();
@@ -707,6 +761,11 @@ public class InteractiveMenu {
         System.out.println(I18n.get("msg.diploma_added") + paper.getTitle());
     }
 
+    /**
+     * Collects paper metadata, then optionally links it to a project and/or publishes it to a journal.
+     *
+     * @param user the researcher publishing the paper
+     */
     private static void addResearcherPaper(User user) {
         ResearcherDecorator researcher = getResearcherOf(user);
         if (researcher == null) { System.out.println("[Error] You don't have researcher status yet."); return; }
@@ -744,6 +803,11 @@ public class InteractiveMenu {
         researchService.addResearcherPaper(user, paper, projectId, journalName);
     }
 
+    /**
+     * Lists the researcher's papers, prompts for a DOI, and increments that paper's citation count.
+     *
+     * @param researcher the researcher whose paper is being cited
+     */
     private static void recordCitation(ResearcherDecorator researcher) {
         if (researcher == null || researcher.getResearchPapersList().isEmpty()) {
             System.out.println(I18n.get("msg.no_papers")); return;
@@ -754,6 +818,11 @@ public class InteractiveMenu {
         researchService.recordCitation(researcher, doi);
     }
 
+    /**
+     * Asks the user to pick a sort order and prints the researcher's papers accordingly.
+     *
+     * @param researcher the researcher whose papers to display
+     */
     private static void printPapersInteractive(ResearcherDecorator researcher) {
         if (researcher == null || researcher.getResearchPapersList().isEmpty()) {
             System.out.println(I18n.get("msg.no_papers")); return;
@@ -761,6 +830,7 @@ public class InteractiveMenu {
         researcher.printPapers(pickPaperComparator());
     }
 
+    /** Lists all research projects and lets the user drill into a project's papers in a loop. */
     private static void listProjectsInteractive() {
         List<ResearchProject> projects = db.getAllProjects();
         if (projects.isEmpty()) { System.out.println("[Projects] No research projects yet."); return; }
@@ -784,6 +854,11 @@ public class InteractiveMenu {
         }
     }
 
+    /**
+     * Prompts for a topic and creates a new research project owned by the user.
+     *
+     * @param user the researcher creating the project
+     */
     private static void createProjectInteractive(User user) {
         ResearcherDecorator rd = getResearcherOf(user);
         if (rd == null) { System.out.println("[Project] You must be a researcher to create a project."); return; }
@@ -792,6 +867,11 @@ public class InteractiveMenu {
         projectService.createProject(user, topic);
     }
 
+    /**
+     * Shows the project list and lets the researcher send a join request for one.
+     *
+     * @param user the researcher who wants to join
+     */
     private static void joinProjectInteractive(User user) {
         ResearcherDecorator rd = getResearcherOf(user);
         if (rd == null) { System.out.println("[Project] You must be a researcher to join a project."); return; }
@@ -804,12 +884,22 @@ public class InteractiveMenu {
         projectService.joinProject(user, pid);
     }
 
+    /**
+     * Prompts for an organization name and creates it with the student as lead.
+     *
+     * @param student the student founding the organization
+     */
     private static void createOrganizationInteractive(Student student) {
         System.out.print("Organization name: ");
         String name = readLine();
         organizationService.createOrganization(student, name);
     }
 
+    /**
+     * Shows all organizations and lets the student select one to send a join request to.
+     *
+     * @param student the student who wants to join
+     */
     private static void joinOrganizationInteractive(Student student) {
         List<Organization> orgs = db.getAllOrganizations();
         if (orgs.isEmpty()) { System.out.println("[Info] No organizations exist yet."); return; }
@@ -828,6 +918,11 @@ public class InteractiveMenu {
         organizationService.joinOrganization(student, orgs.get(idx).getId());
     }
 
+    /**
+     * Collects a title and body from the user and posts them to the staff bulletin board.
+     *
+     * @param author the employee posting the message
+     */
     private static void postToStaffBoardInteractive(User author) {
         System.out.print("Title: ");   String title = readLine();
         if (title.isBlank()) { System.out.println("[Board] Title cannot be empty."); return; }
@@ -836,12 +931,18 @@ public class InteractiveMenu {
         staffBoardService.postToStaffBoard(author.getId(), author.getFullName(), title, body);
     }
 
+    /** Prompts for a journal name and creates a new research journal. */
     private static void createJournalInteractive() {
         System.out.print("Journal name: ");
         String name = readLine().trim();
         journalService.createJournal(name);
     }
 
+    /**
+     * Prompts for a title, description, and urgency level, then submits a tech-support request.
+     *
+     * @param requesterId the ID of the user submitting the request
+     */
     private static void createRequest(String requesterId) {
         System.out.println(I18n.get("hdr.tech_request"));
         System.out.print(I18n.get("lbl.title"));       String title  = readLine();
@@ -857,6 +958,11 @@ public class InteractiveMenu {
 
     // ─── Teacher Actions ───────────────────────────────────────────────────────
 
+    /**
+     * Prompts for course code, student ID, and three mark components, then delegates to {@link MarkService}.
+     *
+     * @param teacher the teacher assigning the mark
+     */
     private static void assignMark(Teacher teacher) {
         System.out.println(I18n.get("hdr.assign_mark"));
         courseService.listCoursesForTeacher(teacher);
@@ -873,6 +979,11 @@ public class InteractiveMenu {
         System.out.println(I18n.get("msg.mark_assigned") + (a1 + a2 + fe));
     }
 
+    /**
+     * Lists students, then prompts for student ID, urgency, and reason before filing a complaint.
+     *
+     * @param teacher the teacher filing the complaint
+     */
     private static void sendComplaint(Teacher teacher) {
         System.out.println(I18n.get("hdr.complaint"));
         userLookupService.listStudents("name");
@@ -887,12 +998,20 @@ public class InteractiveMenu {
         }
     }
 
+    /**
+     * Sends a message from a teacher to an employee (non-students only).
+     *
+     * @param teacher    the sending teacher
+     * @param receiverId the recipient's ID
+     * @param text       the message body
+     */
     private static void sendMessageFromTeacher(Teacher teacher, String receiverId, String text) {
         messageService.sendMessageToEmployee(teacher.getId(), receiverId, text);
     }
 
     // ─── Manager Actions ───────────────────────────────────────────────────────
 
+    /** Shows a numbered teacher list and prints detailed info for the one the manager selects. */
     private static void viewTeacherInteractive() {
         List<Teacher> teachers = db.getAllTeachers();
         if (teachers.isEmpty()) { System.out.println("[Info] No teachers found."); return; }
@@ -909,14 +1028,29 @@ public class InteractiveMenu {
         managerService.viewTeacherDetails(teachers.get(idx).getId());
     }
 
+    /**
+     * Delegates teacher-to-course assignment to {@link ManagerService}.
+     *
+     * @param manager   the approving manager
+     * @param teacherId the teacher's ID
+     * @param code      the course code
+     */
     private static void managerAssign(Manager manager, String teacherId, String code) {
         managerService.assignCourseById(manager, teacherId, code);
     }
 
+    /**
+     * Delegates teacher removal from a course to {@link ManagerService}.
+     *
+     * @param manager   the manager performing the removal
+     * @param teacherId the teacher's ID
+     * @param code      the course code
+     */
     private static void managerUnassign(Manager manager, String teacherId, String code) {
         managerService.unassignCourseById(manager, teacherId, code);
     }
 
+    /** Prompts for all course fields (code, name, credits, type, year, school) and creates the course. */
     private static void managerAddCourseInteractive() {
         System.out.println(I18n.get("hdr.add_course"));
         System.out.print(I18n.get("lbl.course_code_eg")); String code = readLine().toUpperCase();
@@ -942,6 +1076,11 @@ public class InteractiveMenu {
         courseService.addCourse(code, name, credits, courseType, year, school);
     }
 
+    /**
+     * Collects news title, content, and research flag, then publishes via {@link ManagerService}.
+     *
+     * @param manager the manager posting the news
+     */
     private static void managerAddNewsInteractive(Manager manager) {
         System.out.print(I18n.get("lbl.title"));       String title   = readLine();
         System.out.print(I18n.get("lbl.content"));     String content = readLine();
@@ -950,6 +1089,12 @@ public class InteractiveMenu {
         managerService.addNews(manager, new News(title, content, isResearch));
     }
 
+    /**
+     * Admin-only registration flow — same fields as self-registration but routed through
+     * {@link AdminService#addUser} for logging.
+     *
+     * @param admin the admin creating the new account
+     */
     private static void doRegisterAdmin(Admin admin) {
         System.out.println(I18n.get("hdr.add_user"));
         System.out.print(I18n.get("auth.id"));        String id    = readLine();
@@ -1001,6 +1146,11 @@ public class InteractiveMenu {
 
     // ─── Researcher Interactive Methods ────────────────────────────────────────
 
+    /**
+     * Prompts the user to pick a sort strategy and returns the matching {@link java.util.Comparator}.
+     *
+     * @return a paper comparator for citations, date, or page count
+     */
     private static Comparator<ResearchPaper> pickPaperComparator() {
         System.out.println("Sort by: [1] citations  [2] date published  [3] article length (pages)");
         System.out.print("  > ");
@@ -1011,6 +1161,7 @@ public class InteractiveMenu {
         }
     }
 
+    /** Asks whether to filter by school or year, then prints the top-cited researcher for that scope. */
     private static void printTopCitedResearcher() {
         System.out.println("Top cited by: [1] school  [2] year");
         System.out.print("  > ");
@@ -1029,6 +1180,12 @@ public class InteractiveMenu {
         }
     }
 
+    /**
+     * Displays all system-wide research papers in a loop, letting the user drill into one to
+     * read and optionally add a text citation.
+     *
+     * @param viewer the user browsing the papers (used for attributing text citations)
+     */
     private static void printAllResearchPapersInteractive(User viewer) {
         Comparator<ResearchPaper> comp = pickPaperComparator();
         List<ResearchPaper> all = new ArrayList<>();
@@ -1074,6 +1231,11 @@ public class InteractiveMenu {
 
     // ─── Shared UI Helpers ─────────────────────────────────────────────────────
 
+    /**
+     * Lists the student's registered courses, lets them pick one, and shows the instructor(s)' details.
+     *
+     * @param student the student viewing instructor info
+     */
     private static void studentViewTeacher(Student student) {
         List<String> ids = student.getRegisteredCourseIds();
         if (ids == null || ids.isEmpty()) { System.out.println(I18n.get("msg.no_courses_reg")); return; }
@@ -1110,6 +1272,12 @@ public class InteractiveMenu {
         }
     }
 
+    /**
+     * Displays all news in a loop. The user can select an article by ID to read its comments
+     * and optionally add one.
+     *
+     * @param viewer the user browsing news (their name prefixes any comment they add)
+     */
     private static void viewNews(User viewer) {
         while (true) {
             db.reloadFromDisk();
@@ -1149,6 +1317,12 @@ public class InteractiveMenu {
         }
     }
 
+    /**
+     * Validates and applies a new UI language for the user.
+     *
+     * @param user the user changing their language preference
+     * @param lang the language code string (KZ, EN, or RU)
+     */
     private static void switchLanguage(User user, String lang) {
         try {
             LanguageType lt = LanguageType.valueOf(lang.toUpperCase());
@@ -1162,6 +1336,7 @@ public class InteractiveMenu {
 
     // ─── UI Helpers ────────────────────────────────────────────────────────────
 
+    /** Prints the welcome banner with seeded account credentials. */
     private static void printBanner() {
         System.out.println("\n╔═══════════════════════════════════════════════════════╗");
         System.out.println("║        KBTU INTERACTIVE UNIVERSITY SYSTEM             ║");
@@ -1178,24 +1353,37 @@ public class InteractiveMenu {
         System.out.println("╚═══════════════════════════════════════════════════════╝");
     }
 
+    /**
+     * Prints the localized command list under a "Commands" header.
+     *
+     * @param commands pre-translated command descriptions to display
+     */
     private static void printHelp(String[] commands) {
         System.out.println("\n" + I18n.get("hdr.commands"));
         for (String c : commands) System.out.println("  " + c);
     }
 
+    /**
+     * Prints a usage hint for a mistyped command.
+     *
+     * @param example the correct usage string (e.g. {@code "register <code>"})
+     */
     private static void usage(String example) {
         System.out.println(I18n.get("msg.usage") + example);
     }
 
+    /** Reads and trims a line from stdin, returning an empty string on EOF. */
     private static String readLine() {
         try { return sc.nextLine().trim(); } catch (NoSuchElementException e) { return ""; }
     }
 
+    /** Reads a line and parses it as an integer, printing a warning and returning 0 on failure. */
     private static int readInt() {
         try { return Integer.parseInt(sc.nextLine().trim()); }
         catch (Exception e) { System.out.println(I18n.get("msg.invalid_int")); return 0; }
     }
 
+    /** Reads a line and parses it as a double, printing a warning and returning 0.0 on failure. */
     private static double readDouble() {
         try { return Double.parseDouble(sc.nextLine().trim()); }
         catch (Exception e) { System.out.println(I18n.get("msg.invalid_double")); return 0.0; }

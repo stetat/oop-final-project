@@ -11,6 +11,11 @@ import project.patterns.ResearchJournal;
 import project.patterns.ResearcherDecorator;
 
 
+/**
+ * Singleton in-memory database for the KBTU university system.
+ * Persists all data to {@code kbtu_database.dat} via Java serialization.
+ * Always access through {@link #getInstance()}; never construct directly.
+ */
 public class Database implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final String DATA_FILE = "kbtu_database.dat";
@@ -41,6 +46,10 @@ public class Database implements Serializable {
 
     private Database() {}
 
+    /**
+     * Returns the single shared Database instance, loading it from disk on first call.
+     * Creates an empty database if no saved file exists.
+     */
     public static Database getInstance() {
         if (instance == null) {
             instance = loadFromDisk();
@@ -49,6 +58,10 @@ public class Database implements Serializable {
         return instance;
     }
 
+    /**
+     * Serializes the current database state to {@code kbtu_database.dat} using an atomic
+     * write-to-temp-then-rename strategy to avoid corruption on crash.
+     */
     public void saveToDisk() {
         File tmp = new File(DATA_FILE + ".tmp");
         File dst = new File(DATA_FILE);
@@ -72,6 +85,7 @@ public class Database implements Serializable {
         System.out.println("[DB] Saved.");
     }
 
+    /** Deserializes the database from disk; returns {@code null} if the file doesn't exist or fails to load. */
     private static Database loadFromDisk() {
         File f = new File(DATA_FILE);
         if (!f.exists()) return null;
@@ -86,8 +100,13 @@ public class Database implements Serializable {
         }
     }
 
+    /** Clears the in-memory singleton so the next {@link #getInstance()} call reloads from disk. Useful in tests. */
     public static void resetInstance() { instance = null; }
 
+    /**
+     * Refreshes all collections from disk without replacing the singleton instance.
+     * Used by the interactive menu to pick up changes made by other processes.
+     */
     public void reloadFromDisk() {
         File f = new File(DATA_FILE);
         if (!f.exists()) return;
@@ -118,11 +137,19 @@ public class Database implements Serializable {
         }
     }
 
+    /** Inserts or updates a user entry (keyed by their ID). */
     public void saveUser(User user) { users.put(user.getId(), user); }
+
+    /** Permanently removes a user by ID. */
     public void removeUser(String id) { users.remove(id); }
+
+    /** Returns the user with the given ID, or {@code null} if not found. */
     public User getUserById(String id) { return users.get(id); }
+
+    /** Returns all users currently in the database. */
     public Collection<User> getAllUsers() { return users.values(); }
 
+    /** Returns all undergraduate students (excludes graduate students). */
     public List<Student> getAllStudents() {
         List<Student> list = new ArrayList<>();
         for (User u : users.values()) {
@@ -131,6 +158,7 @@ public class Database implements Serializable {
         }
         return list;
     }
+    /** Returns all students, including graduate students. */
     public List<Student> getAllStudentsIncludingGrad() {
         List<Student> list = new ArrayList<>();
         for (User u : users.values()) {
@@ -139,6 +167,7 @@ public class Database implements Serializable {
         }
         return list;
     }
+    /** Returns all teachers, unwrapping any {@link ResearcherDecorator} wrappers. */
     public List<Teacher> getAllTeachers() {
         List<Teacher> list = new ArrayList<>();
         for (User u : users.values()) {
@@ -148,6 +177,12 @@ public class Database implements Serializable {
         return list;
     }
 
+    /**
+     * Wraps a plain user in a {@link ResearcherDecorator} and saves the result.
+     * Does nothing if the user is already a researcher.
+     *
+     * @param user the user to promote
+     */
     public void promoteToResearcher(User user) {
         if (user instanceof ResearcherDecorator) return;
         users.put(user.getId(), new ResearcherDecorator(user));
@@ -158,11 +193,17 @@ public class Database implements Serializable {
     public Course getCourseByCode(String code) { return courses.get(code); }
     public Collection<Course> getAllCourses() { return courses.values(); }
 
+    /**
+     * Assigns a sequential ID to the news item and adds it to the list.
+     *
+     * @param news the news item to store
+     */
     public void addNews(News news) {
         news.setNewsId(String.valueOf(newsIdCounter++));
         newsList.add(news);
     }
     public void removeNews(String newsId) { newsList.removeIf(n -> n.getNewsId().equals(newsId)); }
+    /** Returns all news items sorted by publish date ascending. */
     public List<News> getAllNews() {
         List<News> sorted = new ArrayList<>(newsList);
         sorted.sort((a, b) -> {
@@ -186,6 +227,11 @@ public class Database implements Serializable {
         req.setRequestId("PJ-" + projectJoinReqIdCounter++);
         requests.add(req);
     }
+    /**
+     * Returns all pending (VIEWED) project-join requests for projects owned by {@code ownerId}.
+     *
+     * @param ownerId the project owner's user ID
+     */
     public List<ProjectJoinRequest> getProjectJoinRequestsForOwner(String ownerId) {
         List<ProjectJoinRequest> result = new ArrayList<>();
         for (Request r : requests) {
@@ -232,9 +278,20 @@ public class Database implements Serializable {
         return projects.stream().filter(p -> id.equals(p.getId())).findFirst().orElse(null);
     }
 
+    /**
+     * Records a 1–5 rating submitted by a student for a teacher.
+     *
+     * @param teacherId the teacher's ID
+     * @param rating    the score (expected 1–5)
+     */
     public void addTeacherRating(String teacherId, int rating) {
         teacherRatings.computeIfAbsent(teacherId, k -> new ArrayList<>()).add(rating);
     }
+    /**
+     * Returns the mean of all submitted ratings for a teacher, or 0.0 if none exist.
+     *
+     * @param teacherId the teacher's ID
+     */
     public double getAverageRating(String teacherId) {
         List<Integer> r = teacherRatings.getOrDefault(teacherId, Collections.emptyList());
         return r.stream().mapToInt(Integer::intValue).average().orElse(0.0);
@@ -248,6 +305,12 @@ public class Database implements Serializable {
         return list;
     }
 
+    /**
+     * Returns the researcher in the given school with the highest total citation count,
+     * or {@code null} if no researchers belong to that school.
+     *
+     * @param school the faculty/school to filter by
+     */
     public ResearcherDecorator getTopCitedResearcherBySchool(School school) {
         ResearcherDecorator top = null; int max = -1;
         for (ResearcherDecorator r : getAllResearchers()) {
@@ -262,6 +325,12 @@ public class Database implements Serializable {
         return top;
     }
 
+    /**
+     * Returns the researcher whose papers published in {@code year} have the most total citations,
+     * or {@code null} if no papers were published that year.
+     *
+     * @param year the publication year to filter by (e.g. 2023)
+     */
     public ResearcherDecorator getTopCitedResearcherOfYear(int year) {
         ResearcherDecorator top = null; int max = -1;
         for (ResearcherDecorator r : getAllResearchers()) {
@@ -276,6 +345,10 @@ public class Database implements Serializable {
         return top;
     }
 
+    /**
+     * Returns the researcher with the highest total citation count across all their papers,
+     * or {@code null} if no researchers exist.
+     */
     public ResearcherDecorator getTopCitedResearcher() {
         ResearcherDecorator top = null; int maxCitations = -1;
         for (ResearcherDecorator r : getAllResearchers()) {
@@ -337,6 +410,11 @@ public class Database implements Serializable {
         req.setRequestId("OJ-" + orgJoinReqIdCounter++);
         requests.add(req);
     }
+    /**
+     * Returns all pending (VIEWED) organization-join requests for organizations led by {@code leadId}.
+     *
+     * @param leadId the organization leader's user ID
+     */
     public List<OrgJoinRequest> getOrgJoinRequestsForLead(String leadId) {
         List<OrgJoinRequest> result = new ArrayList<>();
         for (Request r : requests) {
@@ -349,6 +427,11 @@ public class Database implements Serializable {
         return result;
     }
 
+    /**
+     * Prints every research paper in the system, sorted by the given comparator.
+     *
+     * @param comparator sort order (e.g. {@link project.patterns.PaperComparators#BY_CITATIONS_DESC})
+     */
     public void printAllResearchPapers(Comparator<ResearchPaper> comparator) {
         List<ResearchPaper> all = new ArrayList<>();
         for (ResearcherDecorator r : getAllResearchers()) all.addAll(r.getResearchPapersList());

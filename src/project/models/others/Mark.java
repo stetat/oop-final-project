@@ -28,8 +28,15 @@ public class Mark implements Serializable {
         this.courseCode = courseCode;
     }
 
+    /** Returns the sum of both attestations and the final exam (max 100). */
     public double getTotal() { return firstAttestation + secondAttestation + finalExam; }
 
+    /**
+     * Converts the total score to a letter grade on the KBTU scale
+     * (A+ ≥ 95, A ≥ 90 … D ≥ 45, F below 45).
+     *
+     * @return the letter grade string (e.g. "B+")
+     */
     public String getLetterGrade() {
         double t = getTotal();
         if (t >= 95) return "A+";
@@ -46,6 +53,11 @@ public class Mark implements Serializable {
         return "F";
     }
 
+    /**
+     * Maps the letter grade to a 4.0 GPA scale value used to compute the student's GPA.
+     *
+     * @return grade points (e.g. 3.33 for B+)
+     */
     public double getGradePoints() {
         String g = getLetterGrade();
         switch (g) {
@@ -56,6 +68,7 @@ public class Mark implements Serializable {
         }
     }
 
+    /** Returns {@code true} if the student scored at least 50 points (passing threshold). */
     public boolean isPassed() { return getTotal() >= 50.0; }
 
     public double getFirstAttestation() { return firstAttestation; }

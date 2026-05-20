@@ -11,8 +11,17 @@ import project.models.others.ResearcherRequest;
 import project.patterns.ResearcherDecorator;
 import project.storage.Database;
 
+/** Handles generic requests and researcher-role promotion requests. */
 public class RequestService {
 
+    /**
+     * Submits a generic request on behalf of a user.
+     *
+     * @param requesterId the submitting user's ID
+     * @param title       short headline for the request
+     * @param desc        full description
+     * @param level       how urgent the request is
+     */
     public void createRequest(String requesterId, String title, String desc, UrgencyLevel level) {
         Database db = Database.getInstance();
         Request req = new Request(title, desc, level, requesterId);
@@ -21,6 +30,12 @@ public class RequestService {
         System.out.println("[Request] Submitted: " + req.getRequestId());
     }
 
+    /**
+     * Submits a researcher-role request for the user.
+     * Skips if they are already a researcher or have a pending request.
+     *
+     * @param user the user applying for researcher status
+     */
     public void requestResearcherRole(User user) {
         Database db = Database.getInstance();
         if (db.getUserById(user.getId()) instanceof ResearcherDecorator) {
@@ -39,6 +54,7 @@ public class RequestService {
         System.out.println("[Researcher] Request submitted: " + req.getRequestId() + ". Awaiting manager approval.");
     }
 
+    /** Prints all pending researcher-role requests for a manager to review. */
     public void listResearcherRequests() {
         Database db = Database.getInstance();
         List<Request> pending = new ArrayList<>();
@@ -53,6 +69,13 @@ public class RequestService {
         }
     }
 
+    /**
+     * Approves or rejects a researcher-role request. Approved users are promoted via
+     * {@link project.storage.Database#promoteToResearcher}.
+     *
+     * @param reqId   the request ID to process
+     * @param approve {@code true} to promote the user, {@code false} to reject
+     */
     public void handleResearcherRequest(String reqId, boolean approve) {
         Database db = Database.getInstance();
         Request r = db.getRequestById(reqId);
